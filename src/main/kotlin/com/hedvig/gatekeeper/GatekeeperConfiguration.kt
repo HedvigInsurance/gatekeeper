@@ -1,9 +1,12 @@
 package com.hedvig.gatekeeper
 
-import io.dropwizard.Configuration
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.hibernate.validator.constraints.*
+import com.hedvig.gatekeeper.config.AuthConfiguration
+import io.dropwizard.Configuration
+import javax.validation.Valid
 
-import javax.validation.constraints.*
-
-class GatekeeperConfiguration : Configuration() {}
+class GatekeeperConfiguration : Configuration() {
+    @JsonProperty("auth")
+    @Valid
+    lateinit var auth: AuthConfiguration
+}

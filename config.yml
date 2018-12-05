@@ -20,6 +20,9 @@ server:
   - type: http
     port: ${ADMIN_PORT:-8335}
 
+auth:
+  grantTypes: ['dangerously_skip_user_verification']
+
 #database:
 #  driverClass: org.postgresql.Driver
 #  url: ${DATABASE_JDBC}
