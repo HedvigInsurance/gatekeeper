@@ -58,6 +58,10 @@
             <artifactId>dropwizard-jdbi3</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-postgres</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <version>42.2.5</version>
@@ -101,6 +105,11 @@
             <artifactId>java-jwt</artifactId>
             <version>3.4.1</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>3.1.7</version>
+        </dependency>
 
 
         <dependency>
@@ -113,6 +122,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.2.0</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.vintage</groupId>
@@ -124,6 +134,7 @@
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-surefire-provider</artifactId>
             <version>1.1.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

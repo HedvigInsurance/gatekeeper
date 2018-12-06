@@ -25,9 +25,9 @@ auth:
 
 database:
   driverClass: org.postgresql.Driver
-  url: ${DATABASE_JDBC}
-  user: ${DATABASE_USER}
-  password: ${DATABASE_PASSWORD}
+  url: ${DATABASE_JDBC:-dotenv}
+  user: ${DATABASE_USER:-dotenv}
+  password: ${DATABASE_PASSWORD:-dotenv}
   properties:
     charSet: UTF-8
 

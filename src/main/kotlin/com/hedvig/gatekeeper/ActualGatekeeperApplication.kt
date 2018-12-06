@@ -7,6 +7,7 @@ import com.hedvig.gatekeeper.auth.GrantType
 import com.hedvig.gatekeeper.auth.GrantTypeUserProvider
 import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
+import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.Application
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor
 import io.dropwizard.configuration.SubstitutingSourceProvider
@@ -31,6 +32,7 @@ class ActualGatekeeperApplication : Application<GatekeeperConfiguration>() {
     }
 
     override fun run(configuration: GatekeeperConfiguration, environment: Environment) {
+        configureDataSourceFactoryWithDotenv(configuration)
         environment.healthChecks().register("application", ApplicationHealthCheck())
 
         val jdbi = JdbiConnector.connect(configuration, environment)
@@ -43,5 +45,28 @@ class ActualGatekeeperApplication : Application<GatekeeperConfiguration>() {
             grantTypeUserProvider,
             tokenIssuer
         ))
+    }
+
+    private fun configureDataSourceFactoryWithDotenv(configuration: GatekeeperConfiguration) {
+        val dsf = configuration.dataSourceFactory
+        val dotenv = DotenvFacade.getSingleton()
+        dsf.url =
+            if (dsf.url != "dotenv") {
+                dsf.url
+            } else {
+                dotenv.getenv("DATABASE_JDBC")
+            }
+        dsf.user =
+            if (dsf.user != "dotenv") {
+                dsf.user
+            } else {
+                dotenv.getenv("DATABASE_USER")
+            }
+        dsf.password =
+            if (dsf.password != "dotenv") {
+                dsf.password
+            } else {
+                dotenv.getenv("DATABASE_PASSWORD")
+            }
     }
 }
