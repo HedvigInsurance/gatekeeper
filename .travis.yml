@@ -11,7 +11,7 @@ env:
     - DATABASE_TEST_JDBC=jdbc:postgresql://127.0.0.1:5432/gatekeeper
     - DATABASE_TEST_USER=postgres
     - DATABASE_TEST_PASSWORD=''
-    - DATABASE_URL=posgres://postgres@127.0.0.1:5432/gatekeeper?sslmode=disable
+    - DATABASE_URL=postgres://postgres@127.0.0.1:5432/gatekeeper?sslmode=disable
 before_script:
   - psql -c 'CREATE DATABASE gatekeeper;' -U postgres
   - sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/download/v1.4.1/dbmate-linux-amd64
