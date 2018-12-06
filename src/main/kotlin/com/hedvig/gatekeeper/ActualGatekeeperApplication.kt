@@ -5,6 +5,7 @@ import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.auth.AccessTokenIssuer
 import com.hedvig.gatekeeper.auth.GrantType
 import com.hedvig.gatekeeper.auth.GrantTypeUserProvider
+import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import io.dropwizard.Application
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor
@@ -32,6 +33,7 @@ class ActualGatekeeperApplication : Application<GatekeeperConfiguration>() {
     override fun run(configuration: GatekeeperConfiguration, environment: Environment) {
         environment.healthChecks().register("application", ApplicationHealthCheck())
 
+        val jdbi = JdbiConnector.connect(configuration, environment)
         val grantTypeUserProvider = GrantTypeUserProvider()
         val tokenIssuer = AccessTokenIssuer()
 

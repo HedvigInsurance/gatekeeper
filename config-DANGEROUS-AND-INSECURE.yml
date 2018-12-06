@@ -21,11 +21,11 @@ server:
     port: ${ADMIN_PORT:-8335}
 
 auth:
-  grantTypes: []
+  grantTypes: ['dangerously_skip_user_verification']
 
 database:
   driverClass: org.postgresql.Driver
-  url: ${DATABASE_JDBC}
+  url: ${DATABASE_JDBC:-jdbc:postgresql://127.0.0.1:54321/gatekeeper}
   user: ${DATABASE_USER}
   password: ${DATABASE_PASSWORD}
   properties:

@@ -6,7 +6,7 @@ cache:
 
 script:
   - mvn clean install
-  - java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar check config.yml
+  - java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar check config-DANGEROUS-AND-INSECURE.yml
 
 notifications:
   email: false

@@ -1,0 +1,12 @@
+version: '3'
+services:
+  postgres:
+    image: postgres:11
+    ports:
+      - 54321:5432
+    environment:
+      POSTGRES_USER: gatekeeper
+      POSTGRES_PASSWORD: gatekeeper
+      POSTGRES_DB: gatekeeper
+    volumes:
+      - ./postgres:/var/lib/postgresql/data

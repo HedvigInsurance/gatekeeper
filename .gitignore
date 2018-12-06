@@ -1,3 +1,5 @@
 /target
 /lib
+/tmp/*
+!/tmp/docker-compose-db.yml
 
