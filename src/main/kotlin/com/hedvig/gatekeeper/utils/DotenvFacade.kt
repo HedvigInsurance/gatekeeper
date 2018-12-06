@@ -3,7 +3,7 @@ package com.hedvig.gatekeeper.utils
 import io.github.cdimascio.dotenv.Dotenv
 
 class DotenvFacade(
-    val dotenv: Dotenv = Dotenv.load()
+    val dotenv: Dotenv = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load()
 ) {
     fun getenv(env: String): String? {
         return System.getenv(env) ?: dotenv[env]
