@@ -3,6 +3,15 @@ jdk: openjdk10
 cache:
   directories:
   - $HOME/.m2
+services:
+  - postgresql
+env:
+  global:
+    - DATABASE_TEST_JDBC=jdbc:postgresql://127.0.0.1:5432/gatekeeper
+    - DATABASE_TEST_USER=postgres
+    - DATABASE_TEST_PASSWORD=''
+before_script:
+  - psql -c 'CREATE DATABASE gatekeeper;' -U postgres
 
 script:
   - mvn clean install
