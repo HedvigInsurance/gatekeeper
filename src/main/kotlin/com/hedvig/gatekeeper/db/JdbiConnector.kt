@@ -1,6 +1,7 @@
 package com.hedvig.gatekeeper.db
 
 import com.hedvig.gatekeeper.GatekeeperConfiguration
+import com.hedvig.gatekeeper.auth.Role
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.jdbi3.JdbiFactory
 import io.dropwizard.setup.Environment
@@ -32,9 +33,7 @@ class JdbiConnector {
                     )
                     connectionTestJdbi.withHandle<Query, RuntimeException> { it.select("SELECT 1") }
                     logger.info("Successfully connected to and pinged database, setting up real connection");
-                    return JdbiFactory().build(environment, configuration.dataSourceFactory, "postgresql")
-                        .installPlugin(SqlObjectPlugin())
-                        .installPlugin(PostgresPlugin())
+                    return setupJdbi(JdbiFactory().build(environment, configuration.dataSourceFactory, "postgresql"))
                 } catch (e: InterruptedException) {
                     logger.error("Thread interrupted while trying to connect to DB")
                     throw RuntimeException("Thread interrupted while trying to connect to DB", e)
@@ -58,9 +57,14 @@ class JdbiConnector {
             if (password != null) {
                 props["password"] = password
             }
-            return Jdbi.create(jdbc, props)
+            return setupJdbi(Jdbi.create(jdbc, props))
+        }
+
+        private fun setupJdbi(jdbi: Jdbi): Jdbi {
+            return jdbi
                 .installPlugin(SqlObjectPlugin())
                 .installPlugin(PostgresPlugin())
+                .registerArrayType(Role::class.java, "text")
         }
     }
 }

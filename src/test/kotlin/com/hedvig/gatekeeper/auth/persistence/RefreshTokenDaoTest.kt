@@ -1,7 +1,9 @@
 package com.hedvig.gatekeeper.auth.persistence
 
+import com.hedvig.gatekeeper.auth.Role
 import com.hedvig.gatekeeper.db.JdbiConnector
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Test
 import java.lang.RuntimeException
 import java.time.Instant
@@ -16,6 +18,7 @@ class RefreshTokenDaoTest {
 
         val refreshToken = RefreshToken(
             id = UUID.randomUUID(),
+            roles = arrayOf(Role.ROOT),
             subject = "foo@hedvig.com",
             token = "abc123",
             createdAt = Instant.now()
@@ -25,6 +28,7 @@ class RefreshTokenDaoTest {
 
         assertEquals(refreshToken.id, result.id)
         assertEquals(refreshToken.subject, result.subject)
+        assertTrue(refreshToken.roles.contentEquals(result.roles))
         assertEquals(refreshToken.createdAt, result.createdAt)
         assertEquals(refreshToken.token, result.token)
         assertEquals(refreshToken.usedAt, result.usedAt)

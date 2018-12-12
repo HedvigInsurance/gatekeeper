@@ -8,10 +8,10 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import java.util.*
 
 interface RefreshTokenDao {
-    @SqlUpdate("INSERT INTO refresh_tokens (id, subject, token, created_at) VALUES (:id, :subject, :token, :createdAt)")
+    @SqlUpdate("INSERT INTO refresh_tokens (id, subject, roles, token, created_at) VALUES (:id, :subject, :roles, :token, :createdAt)")
     fun createRefreshToken(@BindBean refreshToken: RefreshToken)
 
-    @SqlQuery("SELECT id, subject, token, created_at, used_at FROM refresh_tokens WHERE id = :id")
+    @SqlQuery("SELECT id, subject, roles, token, created_at, used_at FROM refresh_tokens WHERE id = :id")
     @RegisterRowMapper(RefreshTokenRowMapper::class)
     fun findRefreshTokenById(@Bind("id") id: UUID): RefreshToken
 }
