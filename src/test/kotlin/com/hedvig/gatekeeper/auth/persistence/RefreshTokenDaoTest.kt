@@ -1,7 +1,7 @@
 package com.hedvig.gatekeeper.auth.persistence
 
 import com.hedvig.gatekeeper.db.JdbiConnector
-import junit.framework.Assert.assertEquals
+import org.junit.Assert.assertEquals
 import org.junit.jupiter.api.Test
 import java.lang.RuntimeException
 import java.time.Instant

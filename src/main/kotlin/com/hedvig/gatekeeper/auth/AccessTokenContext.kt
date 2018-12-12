@@ -2,7 +2,6 @@ package com.hedvig.gatekeeper.auth
 
 data class AccessTokenContext(
     val subject: String,
-    val audience: Array<String>,
     val roles: Array<Role>
 ) {
     override fun equals(other: Any?): Boolean {
@@ -14,9 +13,6 @@ data class AccessTokenContext(
         other as AccessTokenContext
 
         if (subject != other.subject) {
-            return false
-        }
-        if (!audience.contentEquals(other.audience)) {
             return false
         }
         if (!roles.contentEquals(other.roles)) {

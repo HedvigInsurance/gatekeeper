@@ -38,7 +38,7 @@ class AuthIssuerResource(
         }
 
         val subject = (grantTypeUserProvider.getUserProvider(grantType) as UserProvider<String>).getSubjectFrom(subjectInput)
-        val ctx = AccessTokenContext(subject = subject, audience = arrayOf("hedvig-gatekeeper"), roles = arrayOf(Role.ROOT))
+        val ctx = AccessTokenContext(subject = subject, roles = arrayOf(Role.ROOT))
         val accessToken = tokenIssuer.buildTokenFrom(ctx).sign(Algorithm.HMAC256("very secure"))
 
         return IssueAdminAccessTokenResponse(

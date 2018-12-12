@@ -17,7 +17,6 @@ internal class AccessTokenIssuerTests {
         val time = Instant.now()
         val context = AccessTokenContext(
             subject = "blargh@hedvig.com",
-            audience = arrayOf("hope"),
             roles = arrayOf(Role.ROOT)
         )
         val algorithm = Algorithm.HMAC256("very secure")
@@ -33,9 +32,6 @@ internal class AccessTokenIssuerTests {
         )
         assertTrue(scopesResult.map { it.contentEquals(context.roles) }.orElse(false))
 
-        assertEquals(1, decodedResult.audience.size)
-        assertTrue(decodedResult.audience.contains("hope"))
-
         assertEquals("hedvig-gatekeeper", decodedResult.issuer)
         assertEquals(
             time.plusSeconds(60 * 30).epochSecond,
@@ -49,12 +45,11 @@ internal class AccessTokenIssuerTests {
         val time = Instant.now()
         val context = AccessTokenContext(
             subject = "blargh@hedvig.com",
-            audience = arrayOf("hope"),
             roles = arrayOf(Role.ROOT)
         )
         val algorithm = Algorithm.HMAC256("very secure")
         val token = issuer.buildTokenFrom(context, time).sign(algorithm)
-        val result = issuer.introspect(token = token, expectedAudience = arrayOf("hope"), algorithm = algorithm)
+        val result = issuer.introspect(token = token, algorithm = algorithm)
         assertEquals(context.subject, result.subject)
     }
 
@@ -64,29 +59,12 @@ internal class AccessTokenIssuerTests {
         val time = Instant.now().minusSeconds(30 * 60 + 1)
         val context = AccessTokenContext(
             subject = "blargh@hedvig.com",
-            audience = arrayOf("hope"),
             roles = arrayOf(Role.ROOT)
         )
         val algorithm = Algorithm.HMAC256("very secure")
         val token = issuer.buildTokenFrom(context, time).sign(algorithm)
         assertThrows<JWTVerificationException> {
-            issuer.introspect(token = token, expectedAudience = arrayOf("hope"), algorithm = algorithm)
-        }
-    }
-
-    @Test()
-    fun testVerifiesAccessTokenWithWrongAudience() {
-        val issuer = AccessTokenIssuer()
-        val time = Instant.now()
-        val context = AccessTokenContext(
-            subject = "blargh@hedvig.com",
-            audience = arrayOf("hope"),
-            roles = arrayOf(Role.ROOT)
-        )
-        val algorithm = Algorithm.HMAC256("very secure")
-        val token = issuer.buildTokenFrom(context, time).sign(algorithm)
-        assertThrows<JWTVerificationException> {
-            issuer.introspect(token = token, expectedAudience = arrayOf("not hope"), algorithm = algorithm)
+            issuer.introspect(token = token, algorithm = algorithm)
         }
     }
 
@@ -96,7 +74,6 @@ internal class AccessTokenIssuerTests {
         val time = Instant.now()
         val context = AccessTokenContext(
             subject = "blargh@hedvig.com",
-            audience = arrayOf("hope"),
             roles = arrayOf(Role.ROOT)
         )
         val algorithm = Algorithm.HMAC256("very secure")

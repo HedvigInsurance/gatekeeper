@@ -45,7 +45,6 @@ internal class AuthIssuerResourceTests {
     @Test
     fun testIntrospectsValidToken() {
         val ctx = AccessTokenContext(
-            audience = arrayOf("hedvig-gatekeeper"),
             subject = "foo@hedvig.com",
             roles = arrayOf(Role.ROOT)
         )
@@ -66,7 +65,6 @@ internal class AuthIssuerResourceTests {
     @Test
     fun testFailsToIntrospectExpiredToken() {
         val ctx = AccessTokenContext(
-            audience = arrayOf("hedvig-gatekeeper"),
             subject = "foo@hedvig.com",
             roles = arrayOf(Role.ROOT)
         )

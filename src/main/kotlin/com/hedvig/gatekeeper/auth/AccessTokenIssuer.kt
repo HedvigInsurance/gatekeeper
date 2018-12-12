@@ -12,7 +12,6 @@ class AccessTokenIssuer {
     fun buildTokenFrom(ctx: AccessTokenContext, time: Instant = Instant.now()): JWTCreator.Builder {
         return JWT.create()
             .withIssuer("hedvig-gatekeeper")
-            .withAudience(*ctx.audience)
             .withIssuedAt(Date.from(time))
             .withExpiresAt(Date.from(time.plusSeconds(30L * 60L)))
             .withSubject(ctx.subject)
@@ -22,16 +21,10 @@ class AccessTokenIssuer {
     @Throws(JWTVerificationException::class)
     fun introspect(
         token: String,
-        expectedAudience: Array<String>? = null,
         algorithm: Algorithm
     ): DecodedJWT {
-        val verification = JWT.require(algorithm)
+        return JWT.require(algorithm)
             .withIssuer("hedvig-gatekeeper")
-        if (expectedAudience != null) {
-            verification.withAudience(*expectedAudience)
-        }
-
-        return verification
             .build()
             .verify(token)
     }
