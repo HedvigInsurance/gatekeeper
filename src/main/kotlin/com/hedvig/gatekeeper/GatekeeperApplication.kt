@@ -11,17 +11,19 @@ import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.Application
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor
 import io.dropwizard.configuration.SubstitutingSourceProvider
-import io.dropwizard.jackson.Jackson
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 
-class ActualGatekeeperApplication : Application<GatekeeperConfiguration>() {
-    fun main(args: Array<String>) {
-        ActualGatekeeperApplication().run(*args)
+class GatekeeperApplication : Application<GatekeeperConfiguration>() {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            GatekeeperApplication().run(*args)
+        }
     }
 
     override fun getName(): String {
-        return "ActualGatekeeperApplication"
+        return "GatekeeperApplication"
     }
 
     override fun initialize(bootstrap: Bootstrap<GatekeeperConfiguration>) {
