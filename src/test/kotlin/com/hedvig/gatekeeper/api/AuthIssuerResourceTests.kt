@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.mockito.Mockito.mock
 import java.time.Instant
 import javax.ws.rs.client.Entity
 import javax.ws.rs.core.Form
@@ -18,7 +19,12 @@ import javax.ws.rs.core.Form
 internal class AuthIssuerResourceTests {
     private val allowedGrantTypes = arrayOf(GrantType.DANGEROUSLY_SKIP_USER_VERIFICATION)
     private val resources = ResourceExtension.builder()
-        .addResource(AuthIssuerResource(allowedGrantTypes, GrantTypeUserProvider(), AccessTokenIssuer()))
+        .addResource(
+            AuthIssuerResource(
+                allowedGrantTypes,
+                GrantTypeUserProvider(mock(RefreshTokenSubjectProvider::class.java)),
+                AccessTokenIssuer())
+        )
         .setMapper(Jackson.newMinimalObjectMapper())
         .build()
 
