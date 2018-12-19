@@ -22,11 +22,11 @@ interface ClientDao {
 
     @SqlQuery(
         """
-    SELECT *
-        FROM "clients"
-        WHERE "client_id" = :clientId
-            AND "client_secret" = :clientSecret
-            AND "deactivated_at" IS NULL;"""
+        SELECT *
+            FROM "clients"
+            WHERE "client_id" = :clientId
+                AND "client_secret" = :clientSecret
+                AND "deactivated_at" IS NULL;"""
     )
     @RegisterRowMapper(ClientRowMapper::class)
     fun findClientByIdAndSecret(
@@ -34,24 +34,36 @@ interface ClientDao {
         @Bind("clientSecret") clientSecret: String
     ): Optional<ClientEntity>
 
-    @SqlUpdate("""
-    INSERT INTO clients (
-        client_id,
-        client_secret,
-        redirect_uris,
-        authorized_grant_types,
-        authorized_scopes,
-        created_at,
-        created_by
+    @SqlQuery(
+        """
+    SELECT *
+        FROM "clients"
+        WHERE "deactivated_at" IS NULL
+        ORDER BY "created_at" DESC
+    ;"""
     )
-    VALUES (
-        :clientId,
-        :clientSecret,
-        :redirectUris,
-        :authorizedGrantTypes,
-        :clientScopes,
-        :createdAt,
-        :createdBy
-    );""")
+    @RegisterRowMapper(ClientRowMapper::class)
+    fun findAll(): Array<ClientEntity>
+
+    @SqlUpdate("""
+        INSERT INTO clients (
+            client_id,
+            client_secret,
+            redirect_uris,
+            authorized_grant_types,
+            authorized_scopes,
+            created_at,
+            created_by
+        )
+        VALUES (
+            :clientId,
+            :clientSecret,
+            :redirectUris,
+            :authorizedGrantTypes,
+            :clientScopes,
+            :createdAt,
+            :createdBy
+        );"""
+    )
     fun insertClient(@BindBean client: ClientEntity)
 }

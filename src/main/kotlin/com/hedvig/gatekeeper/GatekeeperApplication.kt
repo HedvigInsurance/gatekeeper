@@ -1,6 +1,10 @@
 package com.hedvig.gatekeeper
 
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
+import com.hedvig.gatekeeper.client.ClientManager
+import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.Application
@@ -26,12 +30,21 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             bootstrap.configurationSourceProvider,
             EnvironmentVariableSubstitutor(false)
         )
+
+        bootstrap.objectMapper.registerModule(KotlinModule())
     }
 
     override fun run(configuration: GatekeeperConfiguration, environment: Environment) {
         configureDataSourceFactoryWithDotenv(configuration)
-        environment.healthChecks().register("application", ApplicationHealthCheck())
 
+        val jdbi = JdbiConnector.connect(configuration, environment)
+
+        val clientManager = jdbi.onDemand(ClientManager::class.java)
+        val clientResource = ClientResource(clientManager)
+
+        environment.jersey().register(clientResource)
+
+        environment.healthChecks().register("application", ApplicationHealthCheck())
         environment.jersey().register(HealthResource())
     }
 

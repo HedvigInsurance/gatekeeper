@@ -3,7 +3,6 @@ package com.hedvig.gatekeeper.client.persistence
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.client.GrantType
 import com.hedvig.gatekeeper.db.JdbiConnector
-import org.jdbi.v3.core.Jdbi
 import org.junit.Assert.*
 import org.junit.jupiter.api.Test
 import java.time.Instant
@@ -40,30 +39,36 @@ internal class ClientDaoTest {
         assertEquals(client.clientId, withSecretResult.clientId)
     }
 
-    private fun insertTestData(jdbi: Jdbi, clientId: UUID) {
-        val createdBy = UUID.randomUUID()
-        val createdAt = "2018-12-19 07:49:00"
-        jdbi.useTransaction<RuntimeException> {
-            it.execute("""
-                INSERT INTO clients (
-                    client_id,
-                    client_secret,
-                    redirect_uris,
-                    authorized_grant_types,
-                    authorized_scopes,
-                    created_at,
-                    created_by
-                )
-                VALUES (
-                    '$clientId',
-                    'very secret',
-                    '{"https://redirect-1", "https://redirect-2"}',
-                    '{"authorization_code", "password"}',
-                    '{"ROOT", "IEX"}',
-                    '$createdAt',
-                    '$createdBy'
-                )
-            """)
+    @Test
+    fun testInsertsAndFindsAllClients() {
+        val jdbi = JdbiConnector.createForTest()
+        val dao = jdbi.onDemand(ClientDao::class.java)
+        jdbi.useHandle<RuntimeException> {
+            it.execute("TRUNCATE clients;")
         }
+
+        val client1 = ClientEntity(
+            clientId = UUID.randomUUID(),
+            clientSecret = "very secret",
+            redirectUris = setOf("https://redirect-1", "https://redirect-2"),
+            authorizedGrantTypes = setOf(GrantType.AUTHORIZATION_CODE, GrantType.PASSWORD),
+            clientScopes = setOf(ClientScope.ROOT, ClientScope.IEX),
+            createdAt = Instant.now(),
+            createdBy = "Blargh"
+        )
+        val client2 = ClientEntity(
+            clientId = UUID.randomUUID(),
+            clientSecret = "very secret",
+            redirectUris = setOf("https://redirect-1", "https://redirect-2"),
+            authorizedGrantTypes = setOf(GrantType.AUTHORIZATION_CODE, GrantType.PASSWORD),
+            clientScopes = setOf(ClientScope.ROOT, ClientScope.IEX),
+            createdAt = Instant.now(),
+            createdBy = "Blargh 2"
+        )
+        dao.insertClient(client1)
+        dao.insertClient(client2)
+
+        val result = dao.findAll()
+        assertArrayEquals(result, arrayOf(client2, client1))
     }
 }
