@@ -1,14 +1,20 @@
 package com.hedvig.gatekeeper.db
 
 import com.hedvig.gatekeeper.GatekeeperConfiguration
-import com.hedvig.gatekeeper.auth.Role
+import com.hedvig.gatekeeper.client.ClientScope
+import com.hedvig.gatekeeper.client.GrantType
+import com.hedvig.gatekeeper.client.persistence.ClientScopeSetSqlargumentFactory
+import com.hedvig.gatekeeper.client.persistence.EnumSetSqlArgumentFactory
+import com.hedvig.gatekeeper.client.persistence.GrantTypeSetSqlArgumentFactory
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.jdbi3.JdbiFactory
 import io.dropwizard.setup.Environment
 import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.jdbi.v3.core.statement.Query
 import org.jdbi.v3.postgres.PostgresPlugin
 import org.jdbi.v3.sqlobject.SqlObjectPlugin
+import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory.getLogger
 import java.lang.Exception
@@ -64,7 +70,11 @@ class JdbiConnector {
             return jdbi
                 .installPlugin(SqlObjectPlugin())
                 .installPlugin(PostgresPlugin())
-                .registerArrayType(Role::class.java, "text")
+                .installPlugin(KotlinPlugin())
+                .installPlugin(KotlinSqlObjectPlugin())
+
+                .registerArgument(GrantTypeSetSqlArgumentFactory())
+                .registerArgument(ClientScopeSetSqlargumentFactory())
         }
     }
 }

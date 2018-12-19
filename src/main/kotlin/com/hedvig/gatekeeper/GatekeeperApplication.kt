@@ -1,13 +1,6 @@
 package com.hedvig.gatekeeper
 
-import com.hedvig.gatekeeper.api.AuthIssuerResource
 import com.hedvig.gatekeeper.api.HealthResource
-import com.hedvig.gatekeeper.auth.AccessTokenIssuer
-import com.hedvig.gatekeeper.auth.GrantType
-import com.hedvig.gatekeeper.auth.GrantTypeUserProvider
-import com.hedvig.gatekeeper.auth.RefreshTokenSubjectProvider
-import com.hedvig.gatekeeper.auth.persistence.RefreshTokenDao
-import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.Application
@@ -39,17 +32,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         configureDataSourceFactoryWithDotenv(configuration)
         environment.healthChecks().register("application", ApplicationHealthCheck())
 
-        val jdbi = JdbiConnector.connect(configuration, environment)
-        val refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java)
-        val grantTypeUserProvider = GrantTypeUserProvider(RefreshTokenSubjectProvider(refreshTokenDao))
-        val tokenIssuer = AccessTokenIssuer()
-
         environment.jersey().register(HealthResource())
-        environment.jersey().register(AuthIssuerResource(
-            configuration.auth.grantTypes.map { GrantType.fromPublicName(it) }.toTypedArray(),
-            grantTypeUserProvider,
-            tokenIssuer
-        ))
     }
 
     private fun configureDataSourceFactoryWithDotenv(configuration: GatekeeperConfiguration) {

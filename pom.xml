@@ -23,7 +23,15 @@
         <kotlin.version>1.3.0</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <kotlin.compiler.jvmTarget>1.8</kotlin.compiler.jvmTarget>
+        <myndocs.oauth.version>0.3.1</myndocs.oauth.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>myndocs-oauth2</id>
+            <url>https://dl.bintray.com/adhesivee/oauth2-server</url>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -60,6 +68,14 @@
         <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi3-postgres</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-kotlin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jdbi</groupId>
+            <artifactId>jdbi3-kotlin-sqlobject</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -101,16 +117,16 @@
 
 
         <dependency>
-            <groupId>com.auth0</groupId>
-            <artifactId>java-jwt</artifactId>
-            <version>3.4.1</version>
-        </dependency>
-        <dependency>
             <groupId>io.github.cdimascio</groupId>
             <artifactId>java-dotenv</artifactId>
             <version>3.1.7</version>
         </dependency>
 
+        <dependency>
+            <groupId>nl.myndocs</groupId>
+            <artifactId>oauth2-server-core</artifactId>
+            <version>${myndocs.oauth.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -121,12 +137,6 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.2.0</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.vintage</groupId>
-            <artifactId>junit-vintage-engine</artifactId>
             <version>5.2.0</version>
             <scope>test</scope>
         </dependency>
