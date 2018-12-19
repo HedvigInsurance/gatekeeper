@@ -66,6 +66,16 @@ internal class ClientResourceTest {
     }
 
     @Test
+    fun testGetsClient() {
+        clientManager.insert(client1)
+
+        val result = resources.target("/admin/clients/${client1.clientId}").request().get()
+        assertThat(result.status).isEqualTo(200)
+        assertThat(result.readEntity(ClientDto::class.java))
+            .isEqualTo(ClientDto.fromClientEntity(client1))
+    }
+
+    @Test
     fun testCreatesAClient() {
         val client = CreateClientRequestDto(
             clientScopes = setOf(ClientScope.IEX),

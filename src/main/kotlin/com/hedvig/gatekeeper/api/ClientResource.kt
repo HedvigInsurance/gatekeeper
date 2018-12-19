@@ -3,12 +3,10 @@ package com.hedvig.gatekeeper.api
 import com.hedvig.gatekeeper.api.dto.ClientDto
 import com.hedvig.gatekeeper.client.ClientManager
 import java.net.URI
+import java.util.*
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import javax.ws.rs.GET
-import javax.ws.rs.POST
-import javax.ws.rs.Path
-import javax.ws.rs.Produces
+import javax.ws.rs.*
 import javax.ws.rs.core.MediaType
 import javax.ws.rs.core.Response
 
@@ -20,6 +18,17 @@ class ClientResource(
     @GET
     fun getClients(): Array<ClientDto> {
         return clientManager.findAll().map { ClientDto.fromClientEntity(it) }.toTypedArray()
+    }
+
+    @GET
+    @Path("/{clientId}")
+    fun getClient(@PathParam("clientId") clientId: UUID): ClientDto {
+        val result = clientManager.find(clientId).map { ClientDto.fromClientEntity(it) }
+        if (result.isEmpty) {
+            throw BadRequestException("No such client")
+        }
+
+        return result.get()
     }
 
     @POST
