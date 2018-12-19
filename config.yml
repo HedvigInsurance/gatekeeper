@@ -20,9 +20,6 @@ server:
   - type: http
     port: ${ADMIN_PORT:-8335}
 
-auth:
-  grantTypes: []
-
 database:
   driverClass: org.postgresql.Driver
   url: ${DATABASE_JDBC:-dotenv}

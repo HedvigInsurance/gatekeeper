@@ -1,9 +1,13 @@
 package com.hedvig.gatekeeper.client
 
+import com.fasterxml.jackson.annotation.JsonValue
+
 enum class GrantType(val publicName: String) {
+
     AUTHORIZATION_CODE("authorization_code"),
     PASSWORD("password");
 
+    @JsonValue
     override fun toString(): String {
         return publicName
     }
