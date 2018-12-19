@@ -10,13 +10,13 @@ import com.hedvig.gatekeeper.db.JdbiConnector
 import io.dropwizard.jackson.Jackson
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport
 import io.dropwizard.testing.junit5.ResourceExtension
-import org.junit.Assert.assertArrayEquals
-import org.junit.Assert.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import java.time.Instant
 import java.util.*
+import javax.ws.rs.client.Entity
 
 @ExtendWith(DropwizardExtensionsSupport::class)
 internal class ClientResourceTest {
@@ -58,10 +58,28 @@ internal class ClientResourceTest {
         clientManager.insert(client2)
 
         val result = resources.target("/admin/clients").request().get()
-        assertEquals(200, result.status)
-        assertArrayEquals(
-            arrayOf(ClientDto.fromClientEntity(client2), ClientDto.fromClientEntity(client1)),
-            result.readEntity(Array<ClientDto>::class.java)
+        assertThat(result.status).isEqualTo(200)
+        assertThat(result.readEntity(Array<ClientDto>::class.java))
+            .isEqualTo(
+                arrayOf(ClientDto.fromClientEntity(client2), ClientDto.fromClientEntity(client1))
+            )
+    }
+
+    @Test
+    fun testCreatesAClient() {
+        val client = CreateClientRequestDto(
+            clientScopes = setOf(ClientScope.IEX),
+            redirectUris = setOf("https://redirect-1"),
+            authorizedGrantTypes = setOf(GrantType.PASSWORD)
         )
+        val result = resources.target("/admin/clients")
+            .request()
+            .post(Entity.json(client))
+        assertThat(result.status).isEqualTo(201)
+
+        val body = result.readEntity(ClientDto::class.java)
+        assertThat(body.clientScopes).isEqualTo(client.clientScopes)
+        assertThat(body.redirectUris).isEqualTo(client.redirectUris)
+        assertThat(body.authorizedGrantTypes).isEqualTo(client.authorizedGrantTypes)
     }
 }
