@@ -1,9 +1,14 @@
 package com.hedvig.gatekeeper
 
-import io.dropwizard.Configuration
 import com.fasterxml.jackson.annotation.JsonProperty
-import org.hibernate.validator.constraints.*
+import io.dropwizard.Configuration
+import io.dropwizard.db.DataSourceFactory
+import javax.validation.Valid
+import javax.validation.constraints.NotNull
 
-import javax.validation.constraints.*
-
-class GatekeeperConfiguration : Configuration() {}
+class GatekeeperConfiguration : Configuration() {
+    @JsonProperty("database")
+    @Valid
+    @NotNull
+    var dataSourceFactory = DataSourceFactory()
+}

@@ -1,5 +1,26 @@
 language: java
-jdk: openjdk10
+jdk: openjdk11
+sudo: required
 cache:
   directories:
   - $HOME/.m2
+services:
+  - postgresql
+env:
+  global:
+    - DATABASE_TEST_JDBC=jdbc:postgresql://127.0.0.1:5432/gatekeeper
+    - DATABASE_TEST_USER=postgres
+    - DATABASE_TEST_PASSWORD=''
+    - DATABASE_URL=postgres://postgres@127.0.0.1:5432/gatekeeper?sslmode=disable
+before_script:
+  - psql -c 'CREATE DATABASE gatekeeper;' -U postgres
+  - sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/download/v1.4.1/dbmate-linux-amd64
+  - sudo chmod +x /usr/local/bin/dbmate
+  - dbmate up
+
+script:
+  - mvn clean install
+  - java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar check config.yml
+
+notifications:
+  email: false
