@@ -10,7 +10,8 @@ internal class JWTAccessTokenConverterTest {
     fun testCreatesAccessTokenWithOutExploding() {
         val jatc = JWTAccessTokenConverter(
             algorithm = Algorithm.HMAC256("blargh"),
-            getNow = { Instant.now() }
+            getNow = { Instant.now() },
+            expirationTimeInSeconds = 1_800
         )
 
         val result = jatc.convertToToken("blargh", "abc123", setOf("ROOT"), null)

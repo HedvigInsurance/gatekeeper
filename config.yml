@@ -1,3 +1,6 @@
+refreshTokenExpirationTimeInDays: 365
+accessTokenExpirationTimeInSeconds: 1800 # 30 minutes
+
 logging:
   level: INFO
   loggers:

@@ -14,7 +14,11 @@ internal class SecureRandomRefreshTokenConverterTest {
     @Test
     fun testCreatesRefreshToken() {
         val randomGenerator = mock(RandomGenerator::class.java)
-        val secureRandomRefreshTokenConverter = SecureRandomRefreshTokenConverter(randomGenerator, { Instant.now() })
+        val secureRandomRefreshTokenConverter = SecureRandomRefreshTokenConverter(
+            randomGenerator,
+            { Instant.now() },
+            60
+        )
 
         `when`(randomGenerator.getBytes(512)).thenReturn("very secure".toByteArray(Charsets.UTF_8))
 

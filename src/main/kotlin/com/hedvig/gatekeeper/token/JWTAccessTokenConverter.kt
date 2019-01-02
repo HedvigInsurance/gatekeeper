@@ -10,7 +10,8 @@ import java.util.*
 
 class JWTAccessTokenConverter(
     private val algorithm: Algorithm,
-    private val getNow: () -> Instant
+    private val getNow: () -> Instant,
+    private val expirationTimeInSeconds: Long
 ) : AccessTokenConverter {
     override fun convertToToken(
         username: String?,
@@ -18,7 +19,7 @@ class JWTAccessTokenConverter(
         requestedScopes: Set<String>,
         refreshToken: RefreshToken?
     ): AccessToken {
-        val expires = getNow().plusSeconds(1_800)
+        val expires = getNow().plusSeconds(expirationTimeInSeconds)
         val jwt = JWT.create()
             .withSubject(username)
             .withJWTId(UUID.randomUUID().toString())

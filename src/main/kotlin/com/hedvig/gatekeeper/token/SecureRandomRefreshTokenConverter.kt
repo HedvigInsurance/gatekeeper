@@ -10,7 +10,8 @@ import java.util.*
 
 class SecureRandomRefreshTokenConverter(
     private val randomGenerator: RandomGenerator,
-    private val getNow: () -> Instant
+    private val getNow: () -> Instant,
+    private val expiryTimeInDays: Long
 ) : RefreshTokenConverter {
     private val LOG = getLogger(RefreshTokenConverter::class.java)
 
@@ -21,7 +22,7 @@ class SecureRandomRefreshTokenConverter(
             clientId = clientId,
             scopes = requestedScopes,
             refreshToken = Base64.getEncoder().encodeToString(randomGenerator.getBytes(512)),
-            expireTime = getNow().plus(60, ChronoUnit.DAYS)
+            expireTime = getNow().plus(expiryTimeInDays, ChronoUnit.DAYS)
         )
     }
 }

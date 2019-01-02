@@ -81,13 +81,22 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         environment.healthChecks().register("application", ApplicationHealthCheck())
         environment.jersey().register(HealthResource())
 
+        val secureRandomRefreshTokenConverter = SecureRandomRefreshTokenConverter(
+            RandomGenerator(SecureRandom()),
+            { Instant.now() },
+            configuration.refreshTokenExpirationTimeInDays!!
+        )
         val oauth2Server = Oauth2Server.configure {
             tokenService = Oauth2TokenServiceBuilder.build {
                 identityService = InMemoryIdentityService("blargh", "very secure")
                 clientService = PostgresClientService(clientManager)
                 tokenStore = postgresTokenStore
-                accessTokenConverter = JWTAccessTokenConverter(jwtAlgorithm, { Instant.now() })
-                refreshTokenConverter = SecureRandomRefreshTokenConverter(RandomGenerator(SecureRandom()), { Instant.now() })
+                accessTokenConverter = JWTAccessTokenConverter(
+                    jwtAlgorithm,
+                    { Instant.now() },
+                    configuration.accessTokenExpirationTimeInSeconds!!
+                )
+                refreshTokenConverter = secureRandomRefreshTokenConverter
             }
         }
         environment.jersey().register(oauth2Server)
