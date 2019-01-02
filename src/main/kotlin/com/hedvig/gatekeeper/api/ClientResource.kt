@@ -2,6 +2,8 @@ package com.hedvig.gatekeeper.api
 
 import com.hedvig.gatekeeper.api.dto.ClientDto
 import com.hedvig.gatekeeper.client.ClientManager
+import com.hedvig.gatekeeper.security.User
+import io.dropwizard.auth.Auth
 import java.net.URI
 import java.util.*
 import javax.annotation.security.RolesAllowed
@@ -36,8 +38,8 @@ class ClientResource(
 
     @POST
     @RolesAllowed("ROOT")
-    fun createCliet(@NotNull @Valid request: CreateClientRequestDto): Response {
-        val result = clientManager.create(request, "TODO")
+    fun createClient(@NotNull @Valid request: CreateClientRequestDto, @Auth user: User): Response {
+        val result = clientManager.create(request, user.name)
         return Response.created(URI.create("/admin/clients/${result.clientId}"))
             .entity(ClientDto.fromClientEntity(result))
             .build()
