@@ -5,7 +5,9 @@ import com.fasterxml.jackson.annotation.JsonValue
 enum class GrantType(val publicName: String) {
 
     AUTHORIZATION_CODE("authorization_code"),
-    PASSWORD("password");
+    PASSWORD("password"),
+    REFRESH_TOKEN("refresh_token"),
+    CLIENT_CREDENTIALS("client_credentials");
 
     @JsonValue
     override fun toString(): String {
@@ -14,14 +16,14 @@ enum class GrantType(val publicName: String) {
 
     companion object {
         fun fromPublicString(publicString: String): GrantType {
-            if (publicString == AUTHORIZATION_CODE.publicName) {
-                return AUTHORIZATION_CODE
+            return when (publicString) {
+                AUTHORIZATION_CODE.publicName -> AUTHORIZATION_CODE
+                PASSWORD.publicName -> PASSWORD
+                REFRESH_TOKEN.publicName -> REFRESH_TOKEN
+                CLIENT_CREDENTIALS.publicName -> CLIENT_CREDENTIALS
+                else ->
+                    throw InvalidGrantTypeException("No such grant type \"$publicString\"")
             }
-            if (publicString == PASSWORD.publicName) {
-                return PASSWORD
-            }
-
-            throw InvalidGrantTypeException("No such grant type \"$publicString\"")
         }
     }
 }

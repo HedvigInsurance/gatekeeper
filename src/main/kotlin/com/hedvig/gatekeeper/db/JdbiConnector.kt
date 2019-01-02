@@ -1,10 +1,7 @@
 package com.hedvig.gatekeeper.db
 
 import com.hedvig.gatekeeper.GatekeeperConfiguration
-import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.client.GrantType
 import com.hedvig.gatekeeper.client.persistence.ClientScopeSetSqlargumentFactory
-import com.hedvig.gatekeeper.client.persistence.EnumSetSqlArgumentFactory
 import com.hedvig.gatekeeper.client.persistence.GrantTypeSetSqlArgumentFactory
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.jdbi3.JdbiFactory
@@ -17,8 +14,6 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin
 import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory.getLogger
-import java.lang.Exception
-import java.lang.RuntimeException
 import java.util.*
 
 class JdbiConnector {
