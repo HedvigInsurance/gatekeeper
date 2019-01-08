@@ -16,7 +16,7 @@ class SecureRandomRefreshTokenConverter(
     private val LOG = getLogger(RefreshTokenConverter::class.java)
 
     override fun convertToToken(username: String?, clientId: String, requestedScopes: Set<String>): RefreshToken {
-        LOG.info("Making new refresh token [username=\"$username\"]")
+        LOG.debug("Making new refresh token [username=\"$username\"]")
         return RefreshToken(
             username = username,
             clientId = clientId,
