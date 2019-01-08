@@ -6,14 +6,13 @@ enum class ClientScope {
 
     companion object {
         fun fromString(string: String): ClientScope {
-            if (string == "ROOT") {
-                return ROOT
+            return when (string) {
+                "ROOT" -> ROOT
+                "IEX" -> IEX
+                else -> {
+                    throw InvalidClientScopeException("No such client scope \"$string\"")
+                }
             }
-            if (string == "IEX") {
-                return IEX
-            }
-
-            throw InvalidClientScopeException("No such client scope \"$string\"")
         }
     }
 }

@@ -11,4 +11,14 @@ class GatekeeperConfiguration : Configuration() {
     @Valid
     @NotNull
     var dataSourceFactory = DataSourceFactory()
+
+    @JsonProperty("refreshTokenExpirationTimeInDays")
+    @Valid
+    @NotNull
+    var refreshTokenExpirationTimeInDays: Long? = null
+
+    @JsonProperty("accessTokenExpirationTimeInSeconds")
+    @Valid
+    @NotNull
+    var accessTokenExpirationTimeInSeconds: Long? = null
 }

@@ -7,6 +7,7 @@ import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.client.GrantType
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
 import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.security.MockSecurityConfigurer
 import io.dropwizard.jackson.Jackson
 import io.dropwizard.testing.junit5.DropwizardExtensionsSupport
 import io.dropwizard.testing.junit5.ResourceExtension
@@ -40,7 +41,8 @@ internal class ClientResourceTest {
         createdAt = Instant.now(),
         createdBy = "Blargh 2"
     )
-    val resources = ResourceExtension.builder()
+    val resources = MockSecurityConfigurer(setOf("ROOT"), setOf("ROOT"))
+        .configureMockSecurity(ResourceExtension.builder())
         .addResource(ClientResource(clientManager))
         .setMapper(Jackson.newObjectMapper().registerModule(KotlinModule()))
         .build()
@@ -57,7 +59,10 @@ internal class ClientResourceTest {
         clientManager.insert(client1)
         clientManager.insert(client2)
 
-        val result = resources.target("/admin/clients").request().get()
+        val result = resources.target("/admin/clients")
+            .request()
+            .header("Authorization", "Bearer eyJ...")
+            .get()
         assertThat(result.status).isEqualTo(200)
         assertThat(result.readEntity(Array<ClientDto>::class.java))
             .isEqualTo(
@@ -69,7 +74,10 @@ internal class ClientResourceTest {
     fun testGetsClient() {
         clientManager.insert(client1)
 
-        val result = resources.target("/admin/clients/${client1.clientId}").request().get()
+        val result = resources.target("/admin/clients/${client1.clientId}")
+            .request()
+            .header("Authorization", "Bearer eyJ...")
+            .get()
         assertThat(result.status).isEqualTo(200)
         assertThat(result.readEntity(ClientDto::class.java))
             .isEqualTo(ClientDto.fromClientEntity(client1))
@@ -84,6 +92,7 @@ internal class ClientResourceTest {
         )
         val result = resources.target("/admin/clients")
             .request()
+            .header("Authorization", "Bearer eyJ...")
             .post(Entity.json(client))
         assertThat(result.status).isEqualTo(201)
 
@@ -91,5 +100,6 @@ internal class ClientResourceTest {
         assertThat(body.clientScopes).isEqualTo(client.clientScopes)
         assertThat(body.redirectUris).isEqualTo(client.redirectUris)
         assertThat(body.authorizedGrantTypes).isEqualTo(client.authorizedGrantTypes)
+        assertThat(body.createdBy).isEqualTo("foo@bar.baz")
     }
 }
