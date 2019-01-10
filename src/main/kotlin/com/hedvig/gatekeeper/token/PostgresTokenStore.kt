@@ -90,6 +90,7 @@ class PostgresTokenStore(
         val clientId = try {
             UUID.fromString(refreshToken.clientId)
         } catch (e: IllegalArgumentException) {
+            LOG.info("Invalid uuid for client_id [client_id='${refreshToken.clientId}']")
             throw InvalidClientException()
         }
         refreshTokenManager.createRefreshToken(

@@ -13,7 +13,9 @@ import com.hedvig.gatekeeper.client.ClientManager
 import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
+import com.hedvig.gatekeeper.identity.ChainedIdentityService
 import com.hedvig.gatekeeper.identity.InMemoryIdentityService
+import com.hedvig.gatekeeper.identity.NaiveGIdentityService
 import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
@@ -35,8 +37,7 @@ import io.dropwizard.configuration.SubstitutingSourceProvider
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import nl.myndocs.oauth2.config.Oauth2TokenServiceBuilder
-import nl.myndocs.oauth2.grant.PasswordGrantAuthorizer
-import nl.myndocs.oauth2.grant.RefreshTokenGrantAuthorizer
+import nl.myndocs.oauth2.grant.*
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature
 import java.security.SecureRandom
 import java.time.Instant
@@ -102,29 +103,41 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             configuration.refreshTokenExpirationTimeInDays!!
         )
         val oauthClientService = PostgresClientService(clientManager)
-        val oauthIdentityService = InMemoryIdentityService("blargh", "very secure")
+        val oauthIdentityService = ChainedIdentityService(arrayOf(
+            InMemoryIdentityService("blargh", "very secure"),
+            NaiveGIdentityService()
+        ))
+        val oauthAccessTokenConverter = JWTAccessTokenConverter(
+            jwtAlgorithm,
+            { Instant.now() },
+            configuration.accessTokenExpirationTimeInSeconds!!
+        )
+        val googleSsoVerifier = GoogleSsoVerifier(
+            dotenv.getenv("GOOGLE_CLIENT_ID")!!,
+            dotenv.getenv("GOOGLE_WEB_CLIENT_ID")!!,
+            configuration.allowedHostedDomains!!
+        )
         val oauth2Server = Oauth2Server.configure {
             tokenService = Oauth2TokenServiceBuilder.build {
                 identityService = oauthIdentityService
                 clientService = oauthClientService
                 tokenStore = postgresTokenStore
-                accessTokenConverter = JWTAccessTokenConverter(
-                    jwtAlgorithm,
-                    { Instant.now() },
-                    configuration.accessTokenExpirationTimeInSeconds!!
-                )
+                accessTokenConverter = oauthAccessTokenConverter
                 refreshTokenConverter = secureRandomRefreshTokenConverter
-                allowedGrantAuthorizers = mapOf(
-                    "password" to PasswordGrantAuthorizer(oauthClientService, oauthIdentityService),
-                    "refresh_token" to RefreshTokenGrantAuthorizer(oauthClientService, oauthIdentityService, postgresTokenStore),
-                    "google_sso" to GoogleSsoGrantAuthorizer(
-                        GoogleSsoVerifier(
-                            dotenv.getenv("GOOGLE_CLIENT_ID")!!,
-                            dotenv.getenv("GOOGLE_CLIENT_SECRET")!!,
-                            dotenv.getenv("GOOGLE_WEB_CLIENT_ID")!!
-                        ),
-                        oauthClientService
-                    )
+                granters = listOf<GrantingCall.() -> Granter>(
+                    {
+                        granter("google_sso") {
+                            GoogleSsoGrantAuthorizer(
+                                ssoVerifier = googleSsoVerifier,
+                                clientService = oauthClientService,
+                                identityService = oauthIdentityService,
+                                accessTokenConverter = oauthAccessTokenConverter,
+                                refreshTokenConverter = secureRandomRefreshTokenConverter,
+                                tokenStore = postgresTokenStore,
+                                tokenService = tokenService
+                            ).grantGoogleSso(callContext)
+                        }
+                    }
                 )
             }
         }

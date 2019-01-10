@@ -7,8 +7,8 @@ import java.util.*
 
 class GoogleSsoVerifier(
     private val clientId: String,
-    private val clientSecret: String,
-    private val webClientId: String
+    private val webClientId: String,
+    private val allowedHostedDomains: Set<String>
 ) {
     fun verifyAndFindUserFromIdToken(idToken: String): Optional<SsoUser> {
         val verifierBuilder = GoogleIdTokenVerifier.Builder(NetHttpTransport(), JacksonFactory.getDefaultInstance())
@@ -16,20 +16,20 @@ class GoogleSsoVerifier(
         val verifier = verifierBuilder.build()
 
         val foundIdToken = Optional.ofNullable(verifier.verify(idToken))
-        return foundIdToken.map {
-            SsoUser(
-                email = it.payload.email,
-                hostedDomain = it.payload.hostedDomain
-            )
-        }
-//        val credential = GoogleCredential()
-//        credential.setFromTokenResponse(TokenResponse().setAccessToken(idToken))
-//        val oauth2 = Oauth2.Builder(
-//            NetHttpTransport(),
-//            JacksonFactory.getDefaultInstance(),
-//            credential
-//        ).build()
-//        val userInfo = oauth2.userinfo().v2().me().get().execute() ?: return Optional.empty()
+        return foundIdToken
+            .map {
+                SsoUser(
+                    email = it.payload.email,
+                    hostedDomain = it.payload.hostedDomain
+                )
+            }
+            .flatMap {
+                if (!allowedHostedDomains.contains(it.hostedDomain)) {
+                    Optional.empty()
+                } else {
+                    Optional.of(it)
+                }
+            }
     }
 }
 

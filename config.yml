@@ -1,5 +1,6 @@
 refreshTokenExpirationTimeInDays: 365
 accessTokenExpirationTimeInSeconds: 1800 # 30 minutes
+allowedHostedDomains: ["hedvig.com"]
 
 logging:
   level: INFO

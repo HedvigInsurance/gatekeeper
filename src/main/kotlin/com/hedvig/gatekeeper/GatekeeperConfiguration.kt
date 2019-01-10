@@ -21,4 +21,9 @@ class GatekeeperConfiguration : Configuration() {
     @Valid
     @NotNull
     var accessTokenExpirationTimeInSeconds: Long? = null
+
+    @JsonProperty("allowedHostedDomains")
+    @Valid
+    @NotNull
+    var allowedHostedDomains: Set<String>? = null
 }
