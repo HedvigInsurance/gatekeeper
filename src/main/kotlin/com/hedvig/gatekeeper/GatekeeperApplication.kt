@@ -2,6 +2,9 @@ package com.hedvig.gatekeeper
 
 import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.hedvig.dropwizard.errors.UnhandledConstraintViolationRequestFilter
+import com.hedvig.dropwizard.errors.ValidationErrorMessageBodyWriter
+import com.hedvig.dropwizard.messages.PlainTextMessageBodyWriter
 import com.hedvig.dropwizard.pebble.PebbleBundle
 import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
@@ -11,7 +14,7 @@ import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.InMemoryIdentityService
-import com.hedvig.gatekeeper.oauth.GoogleAccessTokenGrantAuthorizer
+import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
@@ -72,6 +75,10 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         val jwtAlgorithm = Algorithm.HMAC256(dotenv.getenv("JWT_SECRET"))
         val postgresTokenStore = PostgresTokenStore(jdbi.onDemand(RefreshTokenManager::class.java), jwtAlgorithm)
 
+        environment.jersey().register(UnhandledConstraintViolationRequestFilter())
+        environment.jersey().register(ValidationErrorMessageBodyWriter::class.java)
+        environment.jersey().register(PlainTextMessageBodyWriter::class.java)
+
         val authFilter = AuthDynamicFeature(
             OAuthCredentialAuthFilter.Builder<User>()
                 .setAuthenticator(IntraServiceAuthenticator(postgresTokenStore))
@@ -110,15 +117,21 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                 allowedGrantAuthorizers = mapOf(
                     "password" to PasswordGrantAuthorizer(oauthClientService, oauthIdentityService),
                     "refresh_token" to RefreshTokenGrantAuthorizer(oauthClientService, oauthIdentityService, postgresTokenStore),
-                    "google_access_token" to GoogleAccessTokenGrantAuthorizer(
-                        GoogleSsoVerifier(dotenv.getenv("GOOGLE_CLIENT_ID")!!, dotenv.getenv("GOOGLE_CLIENT_SECRET")!!),
+                    "google_sso" to GoogleSsoGrantAuthorizer(
+                        GoogleSsoVerifier(
+                            dotenv.getenv("GOOGLE_CLIENT_ID")!!,
+                            dotenv.getenv("GOOGLE_CLIENT_SECRET")!!,
+                            dotenv.getenv("GOOGLE_WEB_CLIENT_ID")!!
+                        ),
                         oauthClientService
                     )
                 )
             }
         }
         environment.jersey().register(oauth2Server)
-        environment.jersey().register(SsoWebResource())
+        val selfOauth2ClientId = dotenv.getenv("SELF_OAUTH2_CLIENT_ID")!!
+        val selfOauth2ClientSecret = dotenv.getenv("SELF_OAUTH2_CLIENT_SECRET")!!
+        environment.jersey().register(SsoWebResource(selfOauth2ClientId, selfOauth2ClientSecret))
     }
 
     private fun configureDataSourceFactoryWithDotenv(configuration: GatekeeperConfiguration) {

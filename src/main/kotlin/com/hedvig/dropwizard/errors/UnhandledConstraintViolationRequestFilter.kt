@@ -14,10 +14,16 @@ class UnhandledConstraintViolationRequestFilter : ContainerResponseFilter {
     private lateinit var request: Response
 
     override fun filter(requestContext: ContainerRequestContext, responseContext: ContainerResponseContext) {
-        val resourceClassIsAnnotated = resourceInfo.resourceClass.declaredAnnotations.map { it is UnhandledErrorMessages }.contains(true)
-        val resourceMethodIsAnnotated = resourceInfo.resourceMethod.declaredAnnotations.map { it is UnhandledErrorMessages }.contains(true)
+        val resourceClassIsAnnotated = when {
+            resourceInfo.resourceClass == null -> false
+            else -> resourceInfo.resourceClass.declaredAnnotations.map { it is UnhandledErrorMessages }.contains(true)
+        }
+        val resourceMethodIsAnnotated = when {
+            resourceInfo.resourceMethod == null -> false
+            else -> resourceInfo.resourceMethod.declaredAnnotations.map { it is UnhandledErrorMessages }.contains(true)
+        }
 
-        if (resourceClassIsAnnotated || resourceMethodIsAnnotated && responseContext.entity is ValidationErrorMessage) {
+        if ((resourceClassIsAnnotated || resourceMethodIsAnnotated) && responseContext.entity is ValidationErrorMessage) {
             responseContext.entity = ValidationErrorMessageWrapperMessage(responseContext.entity as ValidationErrorMessage)
         }
     }

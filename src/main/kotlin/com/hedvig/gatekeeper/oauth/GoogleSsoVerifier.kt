@@ -1,48 +1,29 @@
 package com.hedvig.gatekeeper.oauth
 
-import com.google.api.client.auth.oauth2.TokenResponse
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow
-import com.google.api.client.googleapis.auth.oauth2.GoogleClientSecrets
-import com.google.api.client.googleapis.auth.oauth2.GoogleCredential
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier
 import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.json.jackson2.JacksonFactory
-import com.google.api.services.oauth2.Oauth2
 import java.util.*
 
 class GoogleSsoVerifier(
     private val clientId: String,
-    private val clientSecrets: String
+    private val clientSecret: String,
+    private val webClientId: String
 ) {
-//    fun initializeAuthorizationAndGetRedirectUri(): String {
-//        val authorizationCodeFlow = GoogleAuthorizationCodeFlow.Builder(
-//            NetHttpTransport(),
-//            JacksonFactory.getDefaultInstance(),
-//            "client-id",
-//            "client-secret",
-//            setOf(
-//                "https://www.googleapis.com/auth/userinfo.profile",
-//                "https://www.googleapis.com/auth/userinfo.email"
-//            )
-//        ).build()
-//
-//        authorizationCodeFlow.newAuthorizationUrl()
-//    }
-
-    fun verifyAndFindUserFromAccessToken(accessToken: String): Optional<SsoUser> {
+    fun verifyAndFindUserFromIdToken(idToken: String): Optional<SsoUser> {
         val verifierBuilder = GoogleIdTokenVerifier.Builder(NetHttpTransport(), JacksonFactory.getDefaultInstance())
-        verifierBuilder.audience = mutableListOf(clientId)
+        verifierBuilder.audience = mutableListOf(clientId, webClientId)
         val verifier = verifierBuilder.build()
 
-        val idToken = Optional.ofNullable(verifier.verify(accessToken))
-        return idToken.map {
+        val foundIdToken = Optional.ofNullable(verifier.verify(idToken))
+        return foundIdToken.map {
             SsoUser(
-                email = it.payload.subject,
+                email = it.payload.email,
                 hostedDomain = it.payload.hostedDomain
             )
         }
 //        val credential = GoogleCredential()
-//        credential.setFromTokenResponse(TokenResponse().setAccessToken(accessToken))
+//        credential.setFromTokenResponse(TokenResponse().setAccessToken(idToken))
 //        val oauth2 = Oauth2.Builder(
 //            NetHttpTransport(),
 //            JacksonFactory.getDefaultInstance(),

@@ -8,7 +8,7 @@ enum class GrantType(val publicName: String) {
     PASSWORD("password"),
     REFRESH_TOKEN("refresh_token"),
     CLIENT_CREDENTIALS("client_credentials"),
-    GOOGLE_ACCESS_TOKEN("google_access_token");
+    GOOGLE_SSO("google_sso");
 
     @JsonValue
     override fun toString(): String {
@@ -22,7 +22,7 @@ enum class GrantType(val publicName: String) {
                 PASSWORD.publicName -> PASSWORD
                 REFRESH_TOKEN.publicName -> REFRESH_TOKEN
                 CLIENT_CREDENTIALS.publicName -> CLIENT_CREDENTIALS
-                GOOGLE_ACCESS_TOKEN.publicName -> GOOGLE_ACCESS_TOKEN
+                GOOGLE_SSO.publicName -> GOOGLE_SSO
                 else ->
                     throw InvalidGrantTypeException("No such grant type \"$publicString\"")
             }
