@@ -5,6 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.hedvig.gatekeeper.client.ClientScope
+import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.CodeToken
 import nl.myndocs.oauth2.token.RefreshToken
@@ -86,9 +87,14 @@ class PostgresTokenStore(
 
     override fun storeRefreshToken(refreshToken: RefreshToken) {
         LOG.info("Storing refresh token")
+        val clientId = try {
+            UUID.fromString(refreshToken.clientId)
+        } catch (e: IllegalArgumentException) {
+            throw InvalidClientException()
+        }
         refreshTokenManager.createRefreshToken(
             refreshToken.username ?: "system",
-            UUID.fromString(refreshToken.clientId),
+            clientId,
             refreshToken.scopes.map { ClientScope.fromString(it) }.toSet(),
             refreshToken.refreshToken
         )

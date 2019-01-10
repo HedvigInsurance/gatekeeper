@@ -10,6 +10,7 @@ import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.InMemoryIdentityService
+import com.hedvig.gatekeeper.oauth.GoogleAccessTokenGrantAuthorizer
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
 import com.hedvig.gatekeeper.security.User
@@ -28,6 +29,8 @@ import io.dropwizard.configuration.SubstitutingSourceProvider
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import nl.myndocs.oauth2.config.Oauth2TokenServiceBuilder
+import nl.myndocs.oauth2.grant.PasswordGrantAuthorizer
+import nl.myndocs.oauth2.grant.RefreshTokenGrantAuthorizer
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature
 import java.security.SecureRandom
 import java.time.Instant
@@ -86,10 +89,12 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             { Instant.now() },
             configuration.refreshTokenExpirationTimeInDays!!
         )
+        val oauthClientService = PostgresClientService(clientManager)
+        val oauthIdentityService = InMemoryIdentityService("blargh", "very secure")
         val oauth2Server = Oauth2Server.configure {
             tokenService = Oauth2TokenServiceBuilder.build {
-                identityService = InMemoryIdentityService("blargh", "very secure")
-                clientService = PostgresClientService(clientManager)
+                identityService = oauthIdentityService
+                clientService = oauthClientService
                 tokenStore = postgresTokenStore
                 accessTokenConverter = JWTAccessTokenConverter(
                     jwtAlgorithm,
@@ -97,6 +102,11 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                     configuration.accessTokenExpirationTimeInSeconds!!
                 )
                 refreshTokenConverter = secureRandomRefreshTokenConverter
+                allowedGrantAuthorizers = mapOf(
+                    "password" to PasswordGrantAuthorizer(oauthClientService, oauthIdentityService),
+                    "refresh_token" to RefreshTokenGrantAuthorizer(oauthClientService, oauthIdentityService, postgresTokenStore),
+                    "google_access_token" to GoogleAccessTokenGrantAuthorizer(oauthClientService)
+                )
             }
         }
         environment.jersey().register(oauth2Server)
