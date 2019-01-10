@@ -2,6 +2,7 @@ package com.hedvig.gatekeeper
 
 import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.hedvig.dropwizard.pebble.PebbleBundle
 import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
@@ -11,6 +12,7 @@ import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.InMemoryIdentityService
 import com.hedvig.gatekeeper.oauth.GoogleAccessTokenGrantAuthorizer
+import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
 import com.hedvig.gatekeeper.security.User
@@ -20,6 +22,7 @@ import com.hedvig.gatekeeper.token.RefreshTokenManager
 import com.hedvig.gatekeeper.token.SecureRandomRefreshTokenConverter
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import com.hedvig.gatekeeper.utils.RandomGenerator
+import com.hedvig.gatekeeper.web.SsoWebResource
 import io.dropwizard.Application
 import io.dropwizard.auth.AuthDynamicFeature
 import io.dropwizard.auth.AuthValueFactoryProvider
@@ -48,6 +51,8 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
     }
 
     override fun initialize(bootstrap: Bootstrap<GatekeeperConfiguration>) {
+        bootstrap.addBundle(PebbleBundle())
+
         bootstrap.configurationSourceProvider = SubstitutingSourceProvider(
             bootstrap.configurationSourceProvider,
             EnvironmentVariableSubstitutor(false)
@@ -105,11 +110,15 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                 allowedGrantAuthorizers = mapOf(
                     "password" to PasswordGrantAuthorizer(oauthClientService, oauthIdentityService),
                     "refresh_token" to RefreshTokenGrantAuthorizer(oauthClientService, oauthIdentityService, postgresTokenStore),
-                    "google_access_token" to GoogleAccessTokenGrantAuthorizer(oauthClientService)
+                    "google_access_token" to GoogleAccessTokenGrantAuthorizer(
+                        GoogleSsoVerifier(dotenv.getenv("GOOGLE_CLIENT_ID")!!, dotenv.getenv("GOOGLE_CLIENT_SECRET")!!),
+                        oauthClientService
+                    )
                 )
             }
         }
         environment.jersey().register(oauth2Server)
+        environment.jersey().register(SsoWebResource())
     }
 
     private fun configureDataSourceFactoryWithDotenv(configuration: GatekeeperConfiguration) {

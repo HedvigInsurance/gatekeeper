@@ -18,10 +18,10 @@ server:
   type: default
   applicationConnectors:
   - type: http
-    port: ${PORT:-8334}
+    port: ${PORT:-8040}
   adminConnectors:
   - type: http
-    port: ${ADMIN_PORT:-8335}
+    port: ${ADMIN_PORT:-8041}
 
 database:
   driverClass: org.postgresql.Driver

@@ -148,6 +148,11 @@
             <artifactId>google-api-services-oauth2</artifactId>
             <version>v2-rev141-1.25.0</version>
         </dependency>
+        <dependency>
+            <groupId>io.pebbletemplates</groupId>
+            <artifactId>pebble</artifactId>
+            <version>3.0.7</version>
+        </dependency>
 
         <dependency>
             <groupId>nl.myndocs</groupId>
