@@ -1,5 +1,6 @@
 package com.hedvig.gatekeeper.oauth
 
+import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
 import nl.myndocs.oauth2.TokenService
 import nl.myndocs.oauth2.client.ClientService
 import nl.myndocs.oauth2.exception.InvalidGrantException
@@ -13,6 +14,9 @@ import nl.myndocs.oauth2.scope.ScopeParser
 import nl.myndocs.oauth2.token.TokenStore
 import nl.myndocs.oauth2.token.converter.AccessTokenConverter
 import nl.myndocs.oauth2.token.converter.RefreshTokenConverter
+import java.util.*
+
+const val GOOGLE_SSO = "google_sso"
 
 class GoogleSsoGrantAuthorizer(
     private val ssoVerifier: GoogleSsoVerifier,
@@ -21,7 +25,8 @@ class GoogleSsoGrantAuthorizer(
     private val accessTokenConverter: AccessTokenConverter,
     private val refreshTokenConverter: RefreshTokenConverter,
     private val tokenStore: TokenStore,
-    private  val tokenService: TokenService
+    private val tokenService: TokenService,
+    private val grantPersistenceManager: GrantPersistenceManager
 ) {
     fun grantGoogleSso(callContext: CallContext) {
         val googleIdToken = callContext.formParameters["google_id_token"]
@@ -57,6 +62,12 @@ class GoogleSsoGrantAuthorizer(
         )
 
         tokenStore.storeAccessToken(accessToken)
+        grantPersistenceManager.storeGrant(
+            identity.username,
+            grantMethod = GOOGLE_SSO,
+            clientId = UUID.fromString(client.clientId),
+            scopes = requestedScopes
+        )
 
         callContext.respondJson(
             TokenResponse(

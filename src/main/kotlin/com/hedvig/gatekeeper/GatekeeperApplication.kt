@@ -16,8 +16,10 @@ import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.ChainedIdentityService
 import com.hedvig.gatekeeper.identity.InMemoryIdentityService
 import com.hedvig.gatekeeper.identity.NaiveGIdentityService
+import com.hedvig.gatekeeper.oauth.GOOGLE_SSO
 import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
+import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
 import com.hedvig.gatekeeper.security.User
@@ -117,6 +119,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             dotenv.getenv("GOOGLE_WEB_CLIENT_ID")!!,
             configuration.allowedHostedDomains!!
         )
+        val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
         val oauth2Server = Oauth2Server.configure {
             tokenService = Oauth2TokenServiceBuilder.build {
                 identityService = oauthIdentityService
@@ -126,7 +129,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                 refreshTokenConverter = secureRandomRefreshTokenConverter
                 granters = listOf<GrantingCall.() -> Granter>(
                     {
-                        granter("google_sso") {
+                        granter(GOOGLE_SSO) {
                             GoogleSsoGrantAuthorizer(
                                 ssoVerifier = googleSsoVerifier,
                                 clientService = oauthClientService,
@@ -134,7 +137,8 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                                 accessTokenConverter = oauthAccessTokenConverter,
                                 refreshTokenConverter = secureRandomRefreshTokenConverter,
                                 tokenStore = postgresTokenStore,
-                                tokenService = tokenService
+                                tokenService = tokenService,
+                                grantPersistenceManager = grantPersistenceManager
                             ).grantGoogleSso(callContext)
                         }
                     }
