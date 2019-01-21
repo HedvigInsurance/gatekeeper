@@ -1,41 +1,41 @@
 package com.hedvig.gatekeeper.oauth
 
 import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
-import nl.myndocs.oauth2.TokenService
 import nl.myndocs.oauth2.client.ClientService
 import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidIdentityException
 import nl.myndocs.oauth2.exception.InvalidRequestException
+import nl.myndocs.oauth2.grant.GrantingCall
+import nl.myndocs.oauth2.grant.throwExceptionIfUnverifiedClient
+import nl.myndocs.oauth2.grant.validateScopes
 import nl.myndocs.oauth2.identity.IdentityService
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.request.ClientRequest
 import nl.myndocs.oauth2.response.TokenResponse
 import nl.myndocs.oauth2.scope.ScopeParser
 import nl.myndocs.oauth2.token.TokenStore
-import nl.myndocs.oauth2.token.converter.AccessTokenConverter
-import nl.myndocs.oauth2.token.converter.RefreshTokenConverter
+import nl.myndocs.oauth2.token.converter.Converters
 import java.util.*
 
 const val GOOGLE_SSO = "google_sso"
 
 class GoogleSsoGrantAuthorizer(
     private val ssoVerifier: GoogleSsoVerifier,
-    private val clientService: ClientService,
-    private val identityService: IdentityService,
-    private val accessTokenConverter: AccessTokenConverter,
-    private val refreshTokenConverter: RefreshTokenConverter,
-    private val tokenStore: TokenStore,
-    private val tokenService: TokenService,
-    private val grantPersistenceManager: GrantPersistenceManager
-) {
-    fun grantGoogleSso(callContext: CallContext) {
+    override val clientService: ClientService,
+    override  val identityService: IdentityService,
+    override val tokenStore: TokenStore,
+    private val grantPersistenceManager: GrantPersistenceManager,
+    override val callContext: CallContext,
+    override val converters: Converters
+) : GrantingCall {
+    fun grantGoogleSso() {
         val googleIdToken = callContext.formParameters["google_id_token"]
             ?: throw InvalidRequestException("'google_id_token' must be provided")
         val clientRequest = ClientCredentialsOnlyClientRequest(
             clientId = callContext.formParameters["client_id"],
             clientSecret = callContext.formParameters["client_secret"]
         )
-        tokenService.throwExceptionIfUnverifiedClient(clientRequest)
+        throwExceptionIfUnverifiedClient(clientRequest)
         val client = clientService.clientOf(clientRequest.clientId!!)!!
 
         val ssoUser = ssoVerifier.verifyAndFindUserFromIdToken(googleIdToken)
@@ -48,12 +48,12 @@ class GoogleSsoGrantAuthorizer(
             ?: throw InvalidGrantException()
 
         val requestedScopes = ScopeParser.parseScopes(callContext.formParameters["scope"])
-        tokenService.validateScopes(client, identity, requestedScopes)
+        validateScopes(client, identity, requestedScopes)
 
-        val accessToken = accessTokenConverter.convertToToken(
+        val accessToken = converters.accessTokenConverter.convertToToken(
             username = identity.username,
             clientId = client.clientId,
-            refreshToken = refreshTokenConverter.convertToToken(
+            refreshToken = converters.refreshTokenConverter.convertToToken(
                 username = identity.username,
                 clientId = client.clientId,
                 requestedScopes = requestedScopes

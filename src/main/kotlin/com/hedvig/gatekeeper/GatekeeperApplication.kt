@@ -38,8 +38,9 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor
 import io.dropwizard.configuration.SubstitutingSourceProvider
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import nl.myndocs.oauth2.config.Oauth2TokenServiceBuilder
 import nl.myndocs.oauth2.grant.*
+import nl.myndocs.oauth2.token.converter.Converters
+import nl.myndocs.oauth2.token.converter.UUIDCodeTokenConverter
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature
 import java.security.SecureRandom
 import java.time.Instant
@@ -120,30 +121,32 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             configuration.allowedHostedDomains!!
         )
         val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
+        val uuidCodeTokenConverter = UUIDCodeTokenConverter()
         val oauth2Server = Oauth2Server.configure {
-            tokenService = Oauth2TokenServiceBuilder.build {
-                identityService = oauthIdentityService
-                clientService = oauthClientService
-                tokenStore = postgresTokenStore
-                accessTokenConverter = oauthAccessTokenConverter
-                refreshTokenConverter = secureRandomRefreshTokenConverter
-                granters = listOf<GrantingCall.() -> Granter>(
-                    {
-                        granter(GOOGLE_SSO) {
-                            GoogleSsoGrantAuthorizer(
-                                ssoVerifier = googleSsoVerifier,
-                                clientService = oauthClientService,
-                                identityService = oauthIdentityService,
+            identityService = oauthIdentityService
+            clientService = oauthClientService
+            tokenStore = postgresTokenStore
+            accessTokenConverter = oauthAccessTokenConverter
+            refreshTokenConverter = secureRandomRefreshTokenConverter
+            granters = listOf<GrantingCall.() -> Granter>(
+                {
+                    granter(GOOGLE_SSO) {
+                        GoogleSsoGrantAuthorizer(
+                            ssoVerifier = googleSsoVerifier,
+                            clientService = oauthClientService,
+                            identityService = oauthIdentityService,
+                            converters = Converters(
                                 accessTokenConverter = oauthAccessTokenConverter,
                                 refreshTokenConverter = secureRandomRefreshTokenConverter,
-                                tokenStore = postgresTokenStore,
-                                tokenService = tokenService,
-                                grantPersistenceManager = grantPersistenceManager
-                            ).grantGoogleSso(callContext)
-                        }
+                                codeTokenConverter = uuidCodeTokenConverter
+                            ),
+                            tokenStore = postgresTokenStore,
+                            grantPersistenceManager = grantPersistenceManager,
+                            callContext = callContext
+                        ).grantGoogleSso()
                     }
-                )
-            }
+                }
+            )
         }
         environment.jersey().register(oauth2Server)
         val selfOauth2ClientId = dotenv.getenv("SELF_OAUTH2_CLIENT_ID")!!
