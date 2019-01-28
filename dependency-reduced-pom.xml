@@ -271,7 +271,7 @@
     </dependencies>
   </dependencyManagement>
   <properties>
-    <myndocs.oauth.version>0.3.1</myndocs.oauth.version>
+    <myndocs.oauth.version>0.4.0</myndocs.oauth.version>
     <dropwizard.version>1.3.5</dropwizard.version>
     <mainClass>com.hedvig.gatekeeper.GatekeeperApplication</mainClass>
     <kotlin.version>1.3.0</kotlin.version>

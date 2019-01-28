@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Single Sign On - Hedvig</title>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="{{ clientId | escape }}">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+</head>
+<body>
+<h1>Hello! 👋 Here's where you sign on to Hedvig internal systems</h1>
+<p>Unsure what this is? You should probably not be here in that case.</p>
+
+<div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <script>
+        function onSignIn(googleUser) {
+            window.location.href = '/sso/callback/google?id_token=' + encodeURIComponent(googleUser.getAuthResponse().id_token)
+        }
+    </script>
+</body>
+</html>

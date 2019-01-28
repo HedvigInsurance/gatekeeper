@@ -1,5 +1,6 @@
 refreshTokenExpirationTimeInDays: 365
 accessTokenExpirationTimeInSeconds: 1800 # 30 minutes
+allowedHostedDomains: ["hedvig.com"]
 
 logging:
   level: INFO
@@ -18,16 +19,16 @@ server:
   type: default
   applicationConnectors:
   - type: http
-    port: ${PORT:-8334}
+    port: ${PORT:-8040}
   adminConnectors:
   - type: http
-    port: ${ADMIN_PORT:-8335}
+    port: ${ADMIN_PORT:-8041}
 
 database:
   driverClass: org.postgresql.Driver
-  url: ${DATABASE_JDBC:-dotenv}
-  user: ${DATABASE_USER:-dotenv}
-  password: ${DATABASE_PASSWORD:-dotenv}
+  url: ${DATABASE_JDBC}
+  user: ${DATABASE_USER}
+  password: ${DATABASE_PASSWORD}
   properties:
     charSet: UTF-8
 
@@ -45,3 +46,12 @@ database:
 
   # the minimum amount of time an connection must sit idle in the pool before it is eligible for eviction
   minIdleTime: 1 minute
+
+secrets:
+  jwtSecret: ${JWT_SECRET}
+  googleClientId: ${GOOGLE_CLIENT_ID}
+  googleClientSecret: ${GOOGLE_CLIENT_SECRET}
+  googleWebClientId: ${GOOGLE_WEB_CLIENT_ID}
+  selfOauth2ClientId: ${SELF_OAUTH2_CLIENT_ID}
+  selfOauth2ClientSecret: ${SELF_OAUTH2_CLIENT_SECRET}
+
