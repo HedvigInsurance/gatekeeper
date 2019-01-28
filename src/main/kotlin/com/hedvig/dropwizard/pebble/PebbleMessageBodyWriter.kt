@@ -16,7 +16,7 @@ import javax.ws.rs.ext.MessageBodyWriter
 import javax.ws.rs.ext.Provider
 
 @Provider
-@Produces(MediaType.TEXT_HTML)
+@Produces(MediaType.TEXT_HTML, MediaType.TEXT_PLAIN)
 class PebbleMessageBodyWriter(
     private val engine: PebbleEngine,
     private val prefix: String
