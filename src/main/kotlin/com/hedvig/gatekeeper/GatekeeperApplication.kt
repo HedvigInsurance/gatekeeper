@@ -151,7 +151,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         environment.jersey().register(oauth2Server)
         val selfOauth2ClientId = dotenv.getenv("SELF_OAUTH2_CLIENT_ID")!!
         val selfOauth2ClientSecret = dotenv.getenv("SELF_OAUTH2_CLIENT_SECRET")!!
-        environment.jersey().register(SsoWebResource(selfOauth2ClientId, selfOauth2ClientSecret))
+        environment.jersey().register(SsoWebResource(selfOauth2ClientId, selfOauth2ClientSecret, dotenv.getenv("GOOGLE_WEB_CLIENT_ID")!!))
     }
 
     private fun configureDataSourceFactoryWithDotenv(configuration: GatekeeperConfiguration) {

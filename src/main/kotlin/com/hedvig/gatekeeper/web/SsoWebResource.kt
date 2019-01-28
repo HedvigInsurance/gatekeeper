@@ -21,14 +21,15 @@ import javax.ws.rs.core.Response
 @Path("/sso")
 @UnhandledErrorMessages
 class SsoWebResource(
-    val selfClientId: String,
-    val selfClientSecret: String,
-    val client: Client = newClient()
+    private val selfClientId: String,
+    private val selfClientSecret: String,
+    private val googleWebClientId: String,
+    private val client: Client = newClient()
 ) {
     @GET
     @Produces(MediaType.TEXT_HTML)
     fun getSsoTemplate(): View {
-        return GoogleSsoInitView()
+        return GoogleSsoInitView(googleWebClientId)
     }
 
     @GET
