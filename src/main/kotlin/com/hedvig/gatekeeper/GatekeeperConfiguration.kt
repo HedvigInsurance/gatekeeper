@@ -12,18 +12,42 @@ class GatekeeperConfiguration : Configuration() {
     @NotNull
     var dataSourceFactory = DataSourceFactory()
 
-    @JsonProperty("refreshTokenExpirationTimeInDays")
     @Valid
     @NotNull
     var refreshTokenExpirationTimeInDays: Long? = null
 
-    @JsonProperty("accessTokenExpirationTimeInSeconds")
     @Valid
     @NotNull
     var accessTokenExpirationTimeInSeconds: Long? = null
 
-    @JsonProperty("allowedHostedDomains")
     @Valid
     @NotNull
     var allowedHostedDomains: Set<String>? = null
+
+    @Valid
+    @NotNull
+    var secrets: Secrets? = null
+
+    data class Secrets(
+        @Valid
+        @NotNull
+        var jwtSecret: String? = null,
+
+        @Valid
+        @NotNull
+        var googleClientId: String? = null,
+        @Valid
+        @NotNull
+        var googleClientSecret: String? = null,
+        @Valid
+        @NotNull
+        var googleWebClientId: String? = null,
+
+        @Valid
+        @NotNull
+        var selfOauth2ClientId: String? = null,
+        @Valid
+        @NotNull
+        var selfOauth2ClientSecret: String? = null
+    )
 }

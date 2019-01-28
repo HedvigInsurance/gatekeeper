@@ -36,7 +36,7 @@ class SsoWebResource(
     @Path("logout")
     @Produces(MediaType.TEXT_HTML)
     fun getSsoSignoutTemplate(): View {
-        return GoogleSSoSignoutView()
+        return GoogleSSoSignoutView(googleWebClientId)
     }
 
     @GET

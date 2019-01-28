@@ -2,6 +2,7 @@ package com.hedvig.gatekeeper
 
 import com.auth0.jwt.algorithms.Algorithm
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.hedvig.dropwizard.config.DotenvEnvironmentVariableLookup
 import com.hedvig.dropwizard.errors.UnhandledConstraintViolationRequestFilter
 import com.hedvig.dropwizard.errors.ValidationErrorMessageBodyWriter
 import com.hedvig.dropwizard.messages.PlainTextMessageBodyWriter
@@ -60,23 +61,22 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
     override fun initialize(bootstrap: Bootstrap<GatekeeperConfiguration>) {
         bootstrap.addBundle(PebbleBundle())
 
+        val substitutor = EnvironmentVariableSubstitutor(true)
+        substitutor.variableResolver = DotenvEnvironmentVariableLookup(DotenvFacade.getSingleton())
         bootstrap.configurationSourceProvider = SubstitutingSourceProvider(
             bootstrap.configurationSourceProvider,
-            EnvironmentVariableSubstitutor(false)
+            substitutor
         )
 
         bootstrap.objectMapper.registerModule(KotlinModule())
     }
 
     override fun run(configuration: GatekeeperConfiguration, environment: Environment) {
-        configureDataSourceFactoryWithDotenv(configuration)
-
-        val dotenv = DotenvFacade.getSingleton()
         val jdbi = JdbiConnector.connect(configuration, environment)
 
         val clientManager = jdbi.onDemand(ClientManager::class.java)
 
-        val jwtAlgorithm = Algorithm.HMAC256(dotenv.getenv("JWT_SECRET"))
+        val jwtAlgorithm = Algorithm.HMAC256(configuration.secrets!!.jwtSecret!!)
         val postgresTokenStore = PostgresTokenStore(jdbi.onDemand(RefreshTokenManager::class.java), jwtAlgorithm)
 
         environment.jersey().register(UnhandledConstraintViolationRequestFilter())
@@ -116,8 +116,8 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             configuration.accessTokenExpirationTimeInSeconds!!
         )
         val googleSsoVerifier = GoogleSsoVerifier(
-            dotenv.getenv("GOOGLE_CLIENT_ID")!!,
-            dotenv.getenv("GOOGLE_WEB_CLIENT_ID")!!,
+            configuration.secrets!!.googleClientId!!,
+            configuration.secrets!!.googleClientSecret!!,
             configuration.allowedHostedDomains!!
         )
         val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
@@ -149,31 +149,10 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             )
         }
         environment.jersey().register(oauth2Server)
-        val selfOauth2ClientId = dotenv.getenv("SELF_OAUTH2_CLIENT_ID")!!
-        val selfOauth2ClientSecret = dotenv.getenv("SELF_OAUTH2_CLIENT_SECRET")!!
-        environment.jersey().register(SsoWebResource(selfOauth2ClientId, selfOauth2ClientSecret, dotenv.getenv("GOOGLE_WEB_CLIENT_ID")!!))
-    }
-
-    private fun configureDataSourceFactoryWithDotenv(configuration: GatekeeperConfiguration) {
-        val dsf = configuration.dataSourceFactory
-        val dotenv = DotenvFacade.getSingleton()
-        dsf.url =
-            if (dsf.url != "dotenv") {
-                dsf.url
-            } else {
-                dotenv.getenv("DATABASE_JDBC")
-            }
-        dsf.user =
-            if (dsf.user != "dotenv") {
-                dsf.user
-            } else {
-                dotenv.getenv("DATABASE_USER")
-            }
-        dsf.password =
-            if (dsf.password != "dotenv") {
-                dsf.password
-            } else {
-                dotenv.getenv("DATABASE_PASSWORD")
-            }
+        environment.jersey().register(SsoWebResource(
+            selfClientId = configuration.secrets!!.selfOauth2ClientId!!,
+            selfClientSecret = configuration.secrets!!.selfOauth2ClientSecret!!,
+            googleWebClientId = configuration.secrets!!.googleWebClientId!!
+        ))
     }
 }
