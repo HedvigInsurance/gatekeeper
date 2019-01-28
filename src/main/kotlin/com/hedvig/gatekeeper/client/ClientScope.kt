@@ -7,7 +7,8 @@ enum class ClientScope {
     READ_HOPE,
     WRITE_HOPE,
     MANAGE_PAYOUTS,
-    REQUEST_PAYMENTS
+    REQUEST_PAYMENTS,
+    ADMIN_SYSTEM
     ;
 
     companion object {
@@ -20,6 +21,7 @@ enum class ClientScope {
                 "WRITE_HOPE"-> WRITE_HOPE
                 "MANAGE_PAYOUTS" -> MANAGE_PAYOUTS
                 "REQUEST_PAYMENTS" -> REQUEST_PAYMENTS
+                "ADMIN_SYSTEM" -> ADMIN_SYSTEM
                 else -> {
                     throw InvalidClientScopeException("No such client scope \"$string\"")
                 }

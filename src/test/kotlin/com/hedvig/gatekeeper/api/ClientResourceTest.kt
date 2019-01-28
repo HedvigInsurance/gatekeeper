@@ -41,7 +41,7 @@ internal class ClientResourceTest {
         createdAt = Instant.now(),
         createdBy = "Blargh 2"
     )
-    val resources = MockSecurityConfigurer(setOf("MANAGE_MEMBERS"), setOf("MANAGE_MEMBERS"))
+    val resources = MockSecurityConfigurer(setOf("ADMIN_SYSTEM"), setOf("ADMIN_SYSTEM"))
         .configureMockSecurity(ResourceExtension.builder())
         .addResource(ClientResource(clientManager))
         .setMapper(Jackson.newObjectMapper().registerModule(KotlinModule()))
@@ -86,7 +86,7 @@ internal class ClientResourceTest {
     @Test
     fun testCreatesAClient() {
         val client = CreateClientRequestDto(
-            clientScopes = setOf(ClientScope.MANAGE_EMPLOYEES),
+            clientScopes = setOf(ClientScope.ADMIN_SYSTEM),
             redirectUris = setOf("https://redirect-1"),
             authorizedGrantTypes = setOf(GrantType.PASSWORD)
         )
