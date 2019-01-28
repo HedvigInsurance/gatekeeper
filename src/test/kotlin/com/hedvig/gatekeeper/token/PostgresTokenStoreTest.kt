@@ -18,7 +18,7 @@ internal class PostgresTokenStoreTest {
         val at = JWT.create()
             .withIssuer("com.hedvig.gatekeeper")
             .withClaim("client_id", "abc123")
-            .withArrayClaim("scopes", arrayOf("ROOT"))
+            .withArrayClaim("scopes", arrayOf("MANAGE_MEMBERS"))
             .withExpiresAt(Date.from(Instant.now().plusSeconds(1_799)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
@@ -36,7 +36,7 @@ internal class PostgresTokenStoreTest {
         val at = JWT.create()
             .withIssuer("com.hedvig.gatekeeper")
             .withClaim("client_id", "abc123")
-            .withArrayClaim("scopes", arrayOf("ROOT"))
+            .withArrayClaim("scopes", arrayOf("MANAGE_MEMBERS"))
             .withExpiresAt(Date.from(Instant.now().minusSeconds(1)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
@@ -63,14 +63,14 @@ internal class PostgresTokenStoreTest {
             Instant.now(),
             "blargh",
             clientId,
-            setOf("ROOT")
+            setOf("MANAGE_MEMBERS")
         )
         postgresTokenStore.storeRefreshToken(refreshToken)
 
         verify(refreshTokenManager).createRefreshToken(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
-            scopes = setOf(ClientScope.ROOT),
+            scopes = setOf(ClientScope.MANAGE_MEMBERS),
             token = "abc123"
         )
     }

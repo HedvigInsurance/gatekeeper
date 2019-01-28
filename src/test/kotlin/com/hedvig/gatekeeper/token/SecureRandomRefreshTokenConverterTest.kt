@@ -23,11 +23,11 @@ internal class SecureRandomRefreshTokenConverterTest {
         `when`(randomGenerator.getBytes(512)).thenReturn("very secure".toByteArray(Charsets.UTF_8))
 
         val clientId = UUID.randomUUID()
-        val result = secureRandomRefreshTokenConverter.convertToToken("blargh", clientId.toString(), setOf("ROOT"))
+        val result = secureRandomRefreshTokenConverter.convertToToken("blargh", clientId.toString(), setOf("MANAGE_MEMBERS"))
 
         assertThat(result.refreshToken).isEqualTo(VERY_SECURE_IN_BASE64)
         assertThat(result.username).isEqualTo("blargh")
         assertThat(result.clientId).isEqualTo(clientId.toString())
-        assertThat(result.scopes).isEqualTo(setOf("ROOT"))
+        assertThat(result.scopes).isEqualTo(setOf("MANAGE_MEMBERS"))
     }
 }

@@ -16,11 +16,11 @@ internal class RefreshTokenManagerTest {
         val result = refreshTokenManager.createRefreshToken(
             "blargh@blargh.com",
             UUID.randomUUID(),
-            setOf(ClientScope.ROOT),
+            setOf(ClientScope.MANAGE_MEMBERS),
             "abc123"
         )
         assertEquals("blargh@blargh.com", result.subject)
-        assertEquals(setOf(ClientScope.ROOT), result.scopes)
+        assertEquals(setOf(ClientScope.MANAGE_MEMBERS), result.scopes)
 
         assertEquals(result, refreshTokenManager.findUsableRefreshTokenByToken("abc123").get())
     }
@@ -34,7 +34,7 @@ internal class RefreshTokenManagerTest {
         refreshTokenManager.createRefreshToken(
             "blarg@blargh.com",
             UUID.randomUUID(),
-            setOf(ClientScope.ROOT),
+            setOf(ClientScope.MANAGE_MEMBERS),
             "abc123"
         )
         val usedRefreshToken = refreshTokenManager.markAsUsed("abc123")

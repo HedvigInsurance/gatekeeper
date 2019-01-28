@@ -28,7 +28,7 @@ internal class ClientResourceTest {
         clientSecret = "very secret",
         redirectUris = setOf("https://redirect-1", "https://redirect-2"),
         authorizedGrantTypes = setOf(GrantType.AUTHORIZATION_CODE, GrantType.PASSWORD),
-        clientScopes = setOf(ClientScope.ROOT, ClientScope.IEX),
+        clientScopes = setOf(ClientScope.MANAGE_MEMBERS, ClientScope.MANAGE_EMPLOYEES),
         createdAt = Instant.now(),
         createdBy = "Blargh"
     )
@@ -37,11 +37,11 @@ internal class ClientResourceTest {
         clientSecret = "very secret",
         redirectUris = setOf("https://redirect-1", "https://redirect-2"),
         authorizedGrantTypes = setOf(GrantType.AUTHORIZATION_CODE, GrantType.PASSWORD),
-        clientScopes = setOf(ClientScope.ROOT, ClientScope.IEX),
+        clientScopes = setOf(ClientScope.MANAGE_MEMBERS, ClientScope.MANAGE_EMPLOYEES),
         createdAt = Instant.now(),
         createdBy = "Blargh 2"
     )
-    val resources = MockSecurityConfigurer(setOf("ROOT"), setOf("ROOT"))
+    val resources = MockSecurityConfigurer(setOf("MANAGE_MEMBERS"), setOf("MANAGE_MEMBERS"))
         .configureMockSecurity(ResourceExtension.builder())
         .addResource(ClientResource(clientManager))
         .setMapper(Jackson.newObjectMapper().registerModule(KotlinModule()))
@@ -86,7 +86,7 @@ internal class ClientResourceTest {
     @Test
     fun testCreatesAClient() {
         val client = CreateClientRequestDto(
-            clientScopes = setOf(ClientScope.IEX),
+            clientScopes = setOf(ClientScope.MANAGE_EMPLOYEES),
             redirectUris = setOf("https://redirect-1"),
             authorizedGrantTypes = setOf(GrantType.PASSWORD)
         )
