@@ -62,7 +62,7 @@ class GoogleSsoGrantAuthorizer(
         }
         LOG.info("Successfully verified user from google id token [email='${ssoUser.email}']")
 
-        val identity = identityService.identityOf(client, "g:${ssoUser.email}")
+        val identity = identityService.identityOf(client, ssoUser.email)
         if (identity == null) {
             LOG.info("No identity found for user '${ssoUser.email}'")
             throw InvalidGrantException()

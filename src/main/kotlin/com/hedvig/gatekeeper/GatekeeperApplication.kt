@@ -157,6 +157,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         environment.jersey().register(SsoWebResource(
             selfClientId = configuration.secrets!!.selfOauth2ClientId!!,
             selfClientSecret = configuration.secrets!!.selfOauth2ClientSecret!!,
+            selfHost = configuration.selfHost!!,
             googleWebClientId = configuration.secrets!!.googleWebClientId!!
         ))
     }
