@@ -62,6 +62,12 @@ class GoogleSsoGrantAuthorizer(
         }
         LOG.info("Successfully verified user from google id token [email='${ssoUser.email}']")
 
+        var employee = employeeManager.findByEmail(ssoUser.email)
+        if (!employee.isPresent) {
+            LOG.info("Creating employee because they dont exist yet [email='${ssoUser.email}']")
+            employee = Optional.of(employeeManager.newEmployee(ssoUser.email))
+        }
+
         val identity = identityService.identityOf(client, ssoUser.email)
         if (identity == null) {
             LOG.info("No identity found for user '${ssoUser.email}'")
@@ -71,7 +77,7 @@ class GoogleSsoGrantAuthorizer(
         var requestedScopes = ScopeParser.parseScopes(callContext.formParameters["scope"])
         if (requestedScopes.isEmpty()) {
             requestedScopes = roleScopeAssociator
-                .getScopesFrom(employeeManager.findByEmail(identity.username).get().role)
+                .getScopesFrom(employee.get().role)
                 .map { it.toString() }
                 .toSet()
         }
