@@ -116,9 +116,9 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             configuration.accessTokenExpirationTimeInSeconds!!
         )
         val googleSsoVerifier = GoogleSsoVerifier(
-            configuration.secrets!!.googleClientId!!,
-            configuration.secrets!!.googleClientSecret!!,
-            configuration.allowedHostedDomains!!
+            clientId = configuration.secrets!!.googleClientId!!,
+            webClientId = configuration.secrets!!.googleWebClientId!!,
+            allowedHostedDomains = configuration.allowedHostedDomains!!
         )
         val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
         val uuidCodeTokenConverter = UUIDCodeTokenConverter()

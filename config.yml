@@ -51,7 +51,7 @@ secrets:
   jwtSecret: ${JWT_SECRET}
   googleClientId: ${GOOGLE_CLIENT_ID}
   googleClientSecret: ${GOOGLE_CLIENT_SECRET}
-  googleWebClientId: ${GOGOLE_WEB_CLIENT_ID}
+  googleWebClientId: ${GOOGLE_WEB_CLIENT_ID}
   selfOauth2ClientId: ${SELF_OAUTH2_CLIENT_ID}
   selfOauth2ClientSecret: ${SELF_OAUTH2_CLIENT_SECRET}
 
