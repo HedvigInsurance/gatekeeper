@@ -1,5 +1,7 @@
 package com.hedvig.gatekeeper.oauth
 
+import com.hedvig.gatekeeper.authorization.RoleScopeAssociator
+import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
 import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
 import nl.myndocs.oauth2.client.ClientService
 import nl.myndocs.oauth2.exception.InvalidGrantException
@@ -21,13 +23,15 @@ import java.util.*
 const val GOOGLE_SSO = "google_sso"
 
 class GoogleSsoGrantAuthorizer(
-    private val ssoVerifier: GoogleSsoVerifier,
     override val clientService: ClientService,
     override val identityService: IdentityService,
     override val tokenStore: TokenStore,
-    private val grantPersistenceManager: GrantPersistenceManager,
     override val callContext: CallContext,
-    override val converters: Converters
+    override val converters: Converters,
+    private val ssoVerifier: GoogleSsoVerifier,
+    private val grantPersistenceManager: GrantPersistenceManager,
+    private val employeeManager: EmployeeManager,
+    private val roleScopeAssociator: RoleScopeAssociator = RoleScopeAssociator()
 ) : GrantingCall {
     private val LOG = getLogger(GoogleSsoGrantAuthorizer::class.java)
 
@@ -64,7 +68,13 @@ class GoogleSsoGrantAuthorizer(
             throw InvalidGrantException()
         }
 
-        val requestedScopes = ScopeParser.parseScopes(callContext.formParameters["scope"])
+        var requestedScopes = ScopeParser.parseScopes(callContext.formParameters["scope"])
+        if (requestedScopes.isEmpty()) {
+            requestedScopes = roleScopeAssociator
+                .getScopesFrom(employeeManager.findByEmail(identity.username).get().role)
+                .map { it.toString() }
+                .toSet()
+        }
         try {
             validateScopes(client, identity, requestedScopes)
         } catch (e: Exception) {

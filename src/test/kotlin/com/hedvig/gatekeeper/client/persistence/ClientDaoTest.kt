@@ -22,7 +22,7 @@ internal class ClientDaoTest {
             clientSecret = "very secret",
             redirectUris = setOf("https://redirect-1", "https://redirect-2"),
             authorizedGrantTypes = setOf(GrantType.AUTHORIZATION_CODE, GrantType.PASSWORD),
-            clientScopes = setOf(ClientScope.ROOT, ClientScope.IEX),
+            clientScopes = setOf(ClientScope.MANAGE_EMPLOYEES),
             createdAt = Instant.now(),
             createdBy = "Blargh"
         )
