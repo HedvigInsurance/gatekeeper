@@ -19,7 +19,7 @@ before_script:
   - dbmate up
 
 script:
-  - mvn clean install
+  - ./mvnw clean install
   - java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar check config.yml
 
 notifications:
