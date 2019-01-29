@@ -29,7 +29,7 @@ class ClientResource(
     @RolesAllowed("ADMIN_SYSTEM")
     fun getClient(@PathParam("clientId") clientId: UUID): ClientDto {
         val result = clientManager.find(clientId).map { ClientDto.fromClientEntity(it) }
-        if (result.isEmpty) {
+        if (!result.isPresent) {
             throw BadRequestException("No such client")
         }
 

@@ -2,7 +2,6 @@ package com.hedvig.gatekeeper.oauth
 
 import com.hedvig.gatekeeper.authorization.RoleScopeAssociator
 import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
-import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
 import nl.myndocs.oauth2.client.ClientService
 import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidIdentityException
