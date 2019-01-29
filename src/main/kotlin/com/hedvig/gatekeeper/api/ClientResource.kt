@@ -19,17 +19,17 @@ class ClientResource(
     private val clientManager: ClientManager
 ) {
     @GET
-    @RolesAllowed("ROOT")
+    @RolesAllowed("ADMIN_SYSTEM")
     fun getClients(): Array<ClientDto> {
         return clientManager.findAll().map { ClientDto.fromClientEntity(it) }.toTypedArray()
     }
 
     @GET
     @Path("/{clientId}")
-    @RolesAllowed("ROOT")
+    @RolesAllowed("ADMIN_SYSTEM")
     fun getClient(@PathParam("clientId") clientId: UUID): ClientDto {
         val result = clientManager.find(clientId).map { ClientDto.fromClientEntity(it) }
-        if (result.isEmpty) {
+        if (!result.isPresent) {
             throw BadRequestException("No such client")
         }
 
@@ -37,7 +37,7 @@ class ClientResource(
     }
 
     @POST
-    @RolesAllowed("ROOT")
+    @RolesAllowed("ADMIN_SYSTEM")
     fun createClient(@NotNull @Valid request: CreateClientRequestDto, @Auth user: User): Response {
         val result = clientManager.create(request, user.name)
         return Response.created(URI.create("/admin/clients/${result.clientId}"))

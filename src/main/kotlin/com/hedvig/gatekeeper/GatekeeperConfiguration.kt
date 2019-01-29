@@ -23,6 +23,9 @@ class GatekeeperConfiguration : Configuration() {
     @Valid
     @NotNull
     var allowedHostedDomains: Set<String>? = null
+    @Valid
+    @NotNull
+    var selfHost: String? = null
 
     @Valid
     @NotNull

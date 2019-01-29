@@ -1,6 +1,7 @@
 package com.hedvig.gatekeeper.oauth
 
-import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
+import com.hedvig.gatekeeper.authorization.RoleScopeAssociator
+import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
 import nl.myndocs.oauth2.client.ClientService
 import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidIdentityException
@@ -21,13 +22,14 @@ import java.util.*
 const val GOOGLE_SSO = "google_sso"
 
 class GoogleSsoGrantAuthorizer(
-    private val ssoVerifier: GoogleSsoVerifier,
     override val clientService: ClientService,
     override val identityService: IdentityService,
     override val tokenStore: TokenStore,
-    private val grantPersistenceManager: GrantPersistenceManager,
     override val callContext: CallContext,
-    override val converters: Converters
+    override val converters: Converters,
+    private val ssoVerifier: GoogleSsoVerifier,
+    private val employeeManager: EmployeeManager,
+    private val roleScopeAssociator: RoleScopeAssociator = RoleScopeAssociator()
 ) : GrantingCall {
     private val LOG = getLogger(GoogleSsoGrantAuthorizer::class.java)
 
@@ -58,13 +60,25 @@ class GoogleSsoGrantAuthorizer(
         }
         LOG.info("Successfully verified user from google id token [email='${ssoUser.email}']")
 
-        val identity = identityService.identityOf(client, "g:${ssoUser.email}")
+        var employee = employeeManager.findByEmail(ssoUser.email)
+        if (!employee.isPresent) {
+            LOG.info("Creating employee because they dont exist yet [email='${ssoUser.email}']")
+            employee = Optional.of(employeeManager.newEmployee(ssoUser.email))
+        }
+
+        val identity = identityService.identityOf(client, ssoUser.email)
         if (identity == null) {
             LOG.info("No identity found for user '${ssoUser.email}'")
             throw InvalidGrantException()
         }
 
-        val requestedScopes = ScopeParser.parseScopes(callContext.formParameters["scope"])
+        var requestedScopes = ScopeParser.parseScopes(callContext.formParameters["scope"])
+        if (requestedScopes.isEmpty()) {
+            requestedScopes = roleScopeAssociator
+                .getScopesFrom(employee.get().role)
+                .map { it.toString() }
+                .toSet()
+        }
         try {
             validateScopes(client, identity, requestedScopes)
         } catch (e: Exception) {
@@ -84,12 +98,6 @@ class GoogleSsoGrantAuthorizer(
         )
 
         tokenStore.storeAccessToken(accessToken)
-        grantPersistenceManager.storeGrant(
-            identity.username,
-            grantMethod = GOOGLE_SSO,
-            clientId = UUID.fromString(client.clientId),
-            scopes = requestedScopes
-        )
 
         callContext.respondJson(
             TokenResponse(

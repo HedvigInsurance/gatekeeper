@@ -10,13 +10,14 @@ import com.hedvig.dropwizard.pebble.PebbleBundle
 import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
+import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
 import com.hedvig.gatekeeper.client.ClientManager
 import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.ChainedIdentityService
+import com.hedvig.gatekeeper.identity.EmployeeIdentityService
 import com.hedvig.gatekeeper.identity.InMemoryIdentityService
-import com.hedvig.gatekeeper.identity.NaiveGIdentityService
 import com.hedvig.gatekeeper.oauth.GOOGLE_SSO
 import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
@@ -39,7 +40,9 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor
 import io.dropwizard.configuration.SubstitutingSourceProvider
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
-import nl.myndocs.oauth2.grant.*
+import nl.myndocs.oauth2.grant.Granter
+import nl.myndocs.oauth2.grant.GrantingCall
+import nl.myndocs.oauth2.grant.granter
 import nl.myndocs.oauth2.token.converter.Converters
 import nl.myndocs.oauth2.token.converter.UUIDCodeTokenConverter
 import org.glassfish.jersey.server.filter.RolesAllowedDynamicFeature
@@ -75,9 +78,15 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         val jdbi = JdbiConnector.connect(configuration, environment)
 
         val clientManager = jdbi.onDemand(ClientManager::class.java)
+        val employeeManager = jdbi.onDemand(EmployeeManager::class.java)
+        val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
 
         val jwtAlgorithm = Algorithm.HMAC256(configuration.secrets!!.jwtSecret!!)
-        val postgresTokenStore = PostgresTokenStore(jdbi.onDemand(RefreshTokenManager::class.java), jwtAlgorithm)
+        val postgresTokenStore = PostgresTokenStore(
+            refreshTokenManager = jdbi.onDemand(RefreshTokenManager::class.java),
+            grantPersistenceManager = grantPersistenceManager,
+            algorithm = jwtAlgorithm
+        )
 
         environment.jersey().register(UnhandledConstraintViolationRequestFilter())
         environment.jersey().register(ValidationErrorMessageBodyWriter::class.java)
@@ -108,7 +117,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         val oauthClientService = PostgresClientService(clientManager)
         val oauthIdentityService = ChainedIdentityService(arrayOf(
             InMemoryIdentityService("blargh", "very secure"),
-            NaiveGIdentityService()
+            EmployeeIdentityService(employeeManager)
         ))
         val oauthAccessTokenConverter = JWTAccessTokenConverter(
             jwtAlgorithm,
@@ -120,7 +129,6 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             webClientId = configuration.secrets!!.googleWebClientId!!,
             allowedHostedDomains = configuration.allowedHostedDomains!!
         )
-        val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
         val uuidCodeTokenConverter = UUIDCodeTokenConverter()
         val oauth2Server = Oauth2Server.configure {
             identityService = oauthIdentityService
@@ -141,8 +149,8 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                                 codeTokenConverter = uuidCodeTokenConverter
                             ),
                             tokenStore = postgresTokenStore,
-                            grantPersistenceManager = grantPersistenceManager,
-                            callContext = callContext
+                            callContext = callContext,
+                            employeeManager = employeeManager
                         ).grantGoogleSso()
                     }
                 }
@@ -152,6 +160,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         environment.jersey().register(SsoWebResource(
             selfClientId = configuration.secrets!!.selfOauth2ClientId!!,
             selfClientSecret = configuration.secrets!!.selfOauth2ClientSecret!!,
+            selfHost = configuration.selfHost!!,
             googleWebClientId = configuration.secrets!!.googleWebClientId!!
         ))
     }

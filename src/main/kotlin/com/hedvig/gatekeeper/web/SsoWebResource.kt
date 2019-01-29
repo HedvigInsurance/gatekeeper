@@ -24,6 +24,7 @@ class SsoWebResource(
     private val selfClientId: String,
     private val selfClientSecret: String,
     private val googleWebClientId: String,
+    private val selfHost: String,
     private val client: Client = newClient()
 ) {
     @GET
@@ -48,7 +49,7 @@ class SsoWebResource(
         @QueryParam("id_token")
         idToken: String
     ): Response {
-        val uri = URI.create("http://localhost:8040/oauth2/token")
+        val uri = URI.create("$selfHost/oauth2/token")
         val result = client.target(uri)
             .request()
             .post(Entity.form(MultivaluedHashMap(mapOf(

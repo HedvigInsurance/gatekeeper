@@ -1,6 +1,7 @@
 refreshTokenExpirationTimeInDays: 365
 accessTokenExpirationTimeInSeconds: 1800 # 30 minutes
 allowedHostedDomains: ["hedvig.com"]
+selfHost: ${SELF_HOST:-http://localhost:8040}
 
 logging:
   level: INFO
