@@ -3,6 +3,8 @@ package com.hedvig.gatekeeper.token
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.hedvig.gatekeeper.client.ClientScope
+import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
+import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -23,6 +25,7 @@ internal class PostgresTokenStoreTest {
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenManager = mock(RefreshTokenManager::class.java),
+            grantPersistenceManager = mock(GrantPersistenceManager::class.java),
             algorithm = algorithm
         )
 
@@ -41,6 +44,7 @@ internal class PostgresTokenStoreTest {
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenManager = mock(RefreshTokenManager::class.java),
+            grantPersistenceManager = mock(GrantPersistenceManager::class.java),
             algorithm = algorithm
         )
 
@@ -48,25 +52,42 @@ internal class PostgresTokenStoreTest {
         assertThat(result).isNull()
     }
 
+
     @Test
-    fun testStoresRefreshToken() {
+    fun testStoresRefreshTokenAndGrant() {
         val algorithm = Algorithm.HMAC256("abc123")
         val refreshTokenManager = mock(RefreshTokenManager::class.java)
+        val grantPersistenceManager = mock(GrantPersistenceManager::class.java)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenManager = refreshTokenManager,
+            grantPersistenceManager = grantPersistenceManager,
             algorithm = algorithm
         )
 
         val clientId = UUID.randomUUID().toString()
-        val refreshToken = RefreshToken(
-            "abc123",
-            Instant.now(),
-            "blargh",
-            clientId,
-            setOf("MANAGE_MEMBERS")
+        val accessToken = AccessToken(
+            accessToken = "an AT",
+            clientId = clientId,
+            tokenType = "jwt",
+            username = "blargh",
+            expireTime = Instant.now().plusSeconds(1_800),
+            scopes = setOf("MANAGE_MEMBERS"),
+            refreshToken = RefreshToken(
+                "abc123",
+                Instant.now(),
+                "blargh",
+                clientId,
+                setOf("MANAGE_MEMBERS")
+            )
         )
-        postgresTokenStore.storeRefreshToken(refreshToken)
+        postgresTokenStore.storeAccessToken(accessToken)
 
+        verify(grantPersistenceManager).storeGrant(
+            subject = "blargh",
+            clientId = UUID.fromString(clientId),
+            scopes = setOf("MANAGE_MEMBERS"),
+            grantMethod = "TODO"
+        )
         verify(refreshTokenManager).createRefreshToken(
             subject = "blargh",
             clientId = UUID.fromString(clientId),

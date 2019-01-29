@@ -29,7 +29,6 @@ class GoogleSsoGrantAuthorizer(
     override val callContext: CallContext,
     override val converters: Converters,
     private val ssoVerifier: GoogleSsoVerifier,
-    private val grantPersistenceManager: GrantPersistenceManager,
     private val employeeManager: EmployeeManager,
     private val roleScopeAssociator: RoleScopeAssociator = RoleScopeAssociator()
 ) : GrantingCall {
@@ -100,12 +99,6 @@ class GoogleSsoGrantAuthorizer(
         )
 
         tokenStore.storeAccessToken(accessToken)
-        grantPersistenceManager.storeGrant(
-            identity.username,
-            grantMethod = GOOGLE_SSO,
-            clientId = UUID.fromString(client.clientId),
-            scopes = requestedScopes
-        )
 
         callContext.respondJson(
             TokenResponse(

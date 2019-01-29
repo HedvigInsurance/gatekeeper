@@ -23,7 +23,7 @@ class JWTAccessTokenConverter(
         val jwt = JWT.create()
             .withSubject(username)
             .withJWTId(UUID.randomUUID().toString())
-            .withClaim("client_id", clientId)
+            .withAudience(clientId)
             .withArrayClaim("scopes", requestedScopes.toTypedArray())
             .withIssuedAt(Date.from(getNow()))
             .withExpiresAt(Date.from(expires))

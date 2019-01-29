@@ -79,9 +79,14 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
 
         val clientManager = jdbi.onDemand(ClientManager::class.java)
         val employeeManager = jdbi.onDemand(EmployeeManager::class.java)
+        val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
 
         val jwtAlgorithm = Algorithm.HMAC256(configuration.secrets!!.jwtSecret!!)
-        val postgresTokenStore = PostgresTokenStore(jdbi.onDemand(RefreshTokenManager::class.java), jwtAlgorithm)
+        val postgresTokenStore = PostgresTokenStore(
+            refreshTokenManager = jdbi.onDemand(RefreshTokenManager::class.java),
+            grantPersistenceManager = grantPersistenceManager,
+            algorithm = jwtAlgorithm
+        )
 
         environment.jersey().register(UnhandledConstraintViolationRequestFilter())
         environment.jersey().register(ValidationErrorMessageBodyWriter::class.java)
@@ -124,7 +129,6 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             webClientId = configuration.secrets!!.googleWebClientId!!,
             allowedHostedDomains = configuration.allowedHostedDomains!!
         )
-        val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
         val uuidCodeTokenConverter = UUIDCodeTokenConverter()
         val oauth2Server = Oauth2Server.configure {
             identityService = oauthIdentityService
@@ -145,7 +149,6 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                                 codeTokenConverter = uuidCodeTokenConverter
                             ),
                             tokenStore = postgresTokenStore,
-                            grantPersistenceManager = grantPersistenceManager,
                             callContext = callContext,
                             employeeManager = employeeManager
                         ).grantGoogleSso()
