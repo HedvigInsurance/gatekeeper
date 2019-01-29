@@ -32,7 +32,7 @@ class PostgresTokenStore(
             return AccessToken(
                 accessToken = token,
                 expireTime = jwt.expiresAt.toInstant(),
-                clientId = jwt.getClaim("client_id").asString(),
+                clientId = jwt.audience[0],
                 tokenType = "jwt",
                 username = jwt.subject,
                 scopes = jwt.getClaim("scopes").asArray(String::class.java).toSet(),
