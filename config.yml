@@ -1,7 +1,11 @@
 refreshTokenExpirationTimeInDays: 365
 accessTokenExpirationTimeInSeconds: 1800 # 30 minutes
 allowedHostedDomains: ["hedvig.com"]
-selfHost: ${SELF_HOST:-http://localhost:8040}
+
+allowedRedirectDomains: ["hedvig.com", "hedviglocaldev.com", "dev.hedvigit.com"]
+secureCookies: ${SECURE_COOKIES:-false}
+cookieDomain: ${COOKIE_DOMAIN:-hedviglocaldev.com}
+selfHost: ${SELF_HOST:-http://hedviglocaldev.com:8040}
 
 logging:
   level: INFO
@@ -19,11 +23,11 @@ logging:
 server:
   type: default
   applicationConnectors:
-  - type: http
-    port: ${PORT:-8040}
+    - type: http
+      port: ${PORT:-8040}
   adminConnectors:
-  - type: http
-    port: ${ADMIN_PORT:-8041}
+    - type: http
+      port: ${ADMIN_PORT:-8041}
 
 database:
   driverClass: org.postgresql.Driver

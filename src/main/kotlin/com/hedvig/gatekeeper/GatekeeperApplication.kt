@@ -32,6 +32,7 @@ import com.hedvig.gatekeeper.token.SecureRandomRefreshTokenConverter
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import com.hedvig.gatekeeper.utils.RandomGenerator
 import com.hedvig.gatekeeper.web.sso.Oauth2Client
+import com.hedvig.gatekeeper.web.sso.RedirectValidator
 import com.hedvig.gatekeeper.web.sso.SsoWebResource
 import io.dropwizard.Application
 import io.dropwizard.assets.AssetsBundle
@@ -166,6 +167,9 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                 selfClientSecret = configuration.secrets!!.selfOauth2ClientSecret!!,
                 selfHost = configuration.selfHost!!
             ),
+            redirectValidator = RedirectValidator(configuration.allowedRedirectDomains!!),
+            secureCookies = configuration.secureCookies!!,
+            cookieDomain = configuration.cookieDomain!!,
             googleWebClientId = configuration.secrets!!.googleWebClientId!!
         ))
     }

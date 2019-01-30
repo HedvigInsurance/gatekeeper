@@ -25,6 +25,15 @@ class GatekeeperConfiguration : Configuration() {
     var allowedHostedDomains: Set<String>? = null
     @Valid
     @NotNull
+    var allowedRedirectDomains: Set<String>? = null
+    @Valid
+    @NotNull
+    var secureCookies: Boolean? = null
+    @Valid
+    @NotNull
+    var cookieDomain: String? = null
+    @Valid
+    @NotNull
     var selfHost: String? = null
 
     @Valid

@@ -16,24 +16,10 @@
         <h1>Employee sign in</h1>
         <img src="https://cdn.hedvig.com/identity/graphics/hedvig-symbol-color.svg" width="50" />
 
-        <p id="signing-out">You're being signed out...</p>
-        <p id="signed-out" class="hidden">You're now signed out. See ya!</p>
+        <p>You're being redirected...</p>
+
+        <div class="grant-error">{{ error }}</div>
     </div>
 </div>
-
-<script>
-function signOut() {
-  gapi.load('auth2', function() {
-        gapi.auth2.init({ client_id: '{{ clientId | escape("js") }}' })
-            .then(function() {
-                var auth2 = gapi.auth2.getAuthInstance();
-                auth2.signOut().then(function () {
-                    document.getElementById("signing-out").classList.add("hidden")
-                    document.getElementById("signed-out").classList.remove("hidden")
-                })
-            })
-    })
-}
-</script>
 </body>
 </html>

@@ -17,6 +17,7 @@
 }
 
 .grant-error {
+    padding-top: 15px;
     color: #FF8A80;
     font-weight: 600;
 }
@@ -28,4 +29,8 @@
 
 .h-google-signin-wrapper {
     text-align: center;
+}
+
+.hidden {
+    display: none;
 }

@@ -30,7 +30,9 @@
 
 <script>
     function onSignIn(googleUser) {
-        window.location.href = '/sso/callback/google?id_token=' + encodeURIComponent(googleUser.getAuthResponse().id_token)
+        window.location.href = '/sso/callback/google?id_token='
+        + encodeURIComponent(googleUser.getAuthResponse().id_token)
+        + '&redirect=' + encodeURIComponent('{{ redirect | escape('js') }}')
     }
 </script>
 </body>
