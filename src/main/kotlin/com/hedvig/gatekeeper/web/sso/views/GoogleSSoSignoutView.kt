@@ -1,4 +1,4 @@
-package com.hedvig.gatekeeper.web.views
+package com.hedvig.gatekeeper.web.sso.views
 
 import com.hedvig.dropwizard.pebble.View
 
@@ -7,5 +7,5 @@ class GoogleSSoSignoutView(private val googleWebClientId: String) : View {
         "clientId" to googleWebClientId
     )
 
-    override fun getName(): String = "sso/google-logout.html.peb"
+    override fun getName(): String = "sso/google-signout.html.peb"
 }

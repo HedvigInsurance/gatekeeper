@@ -31,8 +31,11 @@ import com.hedvig.gatekeeper.token.RefreshTokenManager
 import com.hedvig.gatekeeper.token.SecureRandomRefreshTokenConverter
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import com.hedvig.gatekeeper.utils.RandomGenerator
-import com.hedvig.gatekeeper.web.SsoWebResource
+import com.hedvig.gatekeeper.web.sso.Oauth2Client
+import com.hedvig.gatekeeper.web.sso.RedirectValidator
+import com.hedvig.gatekeeper.web.sso.SsoWebResource
 import io.dropwizard.Application
+import io.dropwizard.assets.AssetsBundle
 import io.dropwizard.auth.AuthDynamicFeature
 import io.dropwizard.auth.AuthValueFactoryProvider
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter
@@ -63,6 +66,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
 
     override fun initialize(bootstrap: Bootstrap<GatekeeperConfiguration>) {
         bootstrap.addBundle(PebbleBundle())
+        bootstrap.addBundle(AssetsBundle("/assets", "/assets"))
 
         val substitutor = EnvironmentVariableSubstitutor(true)
         substitutor.variableResolver = DotenvEnvironmentVariableLookup(DotenvFacade.getSingleton())
@@ -158,9 +162,14 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         }
         environment.jersey().register(oauth2Server)
         environment.jersey().register(SsoWebResource(
-            selfClientId = configuration.secrets!!.selfOauth2ClientId!!,
-            selfClientSecret = configuration.secrets!!.selfOauth2ClientSecret!!,
-            selfHost = configuration.selfHost!!,
+            oauth2Client = Oauth2Client(
+                selfClientId = configuration.secrets!!.selfOauth2ClientId!!,
+                selfClientSecret = configuration.secrets!!.selfOauth2ClientSecret!!,
+                selfHost = configuration.selfHost!!
+            ),
+            redirectValidator = RedirectValidator(configuration.allowedRedirectDomains!!),
+            secureCookies = configuration.secureCookies!!,
+            cookieDomain = configuration.cookieDomain!!,
             googleWebClientId = configuration.secrets!!.googleWebClientId!!
         ))
     }

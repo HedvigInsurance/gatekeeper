@@ -1,0 +1,36 @@
+.sso-body {
+    background: #070646;
+}
+
+.main-wrapper {
+    padding: 15px;
+    width: 100%;
+}
+
+.main {
+    margin: 10vh auto;
+    text-align: center;
+    max-width: 500px;
+    padding: 15px;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.grant-error {
+    padding-top: 15px;
+    color: #FF8A80;
+    font-weight: 600;
+}
+
+.h-google-signin {
+    display: inline-block;
+    margin: 30px auto;
+}
+
+.h-google-signin-wrapper {
+    text-align: center;
+}
+
+.hidden {
+    display: none;
+}

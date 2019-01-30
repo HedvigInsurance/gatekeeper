@@ -16,6 +16,7 @@ import nl.myndocs.oauth2.response.TokenResponse
 import nl.myndocs.oauth2.scope.ScopeParser
 import nl.myndocs.oauth2.token.TokenStore
 import nl.myndocs.oauth2.token.converter.Converters
+import nl.myndocs.oauth2.token.toMap
 import org.slf4j.LoggerFactory.getLogger
 import java.util.*
 
@@ -106,6 +107,7 @@ class GoogleSsoGrantAuthorizer(
                 expiresIn = accessToken.expiresIn(),
                 tokenType = accessToken.tokenType
             )
+                .toMap()
         )
 
         LOG.info("Successfully authorized user [username='${identity.username}']")

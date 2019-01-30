@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Signing out - Hedvig</title>
+    <link rel="stylesheet" href="/assets/style-base.css" type="text/css" />
+    <link rel="stylesheet" href="/assets/style-sso.css" type="text/css" />
+</head>
+<body class="sso-body">
+<div class="main-wrapper">
+    <div class="main">
+        <h1>Employee sign in</h1>
+        <img src="https://cdn.hedvig.com/identity/graphics/hedvig-symbol-color.svg" width="50" />
+
+        <div class="grant-error">{{ error }}</div>
+    </div>
+</div>
+</body>
+</html>

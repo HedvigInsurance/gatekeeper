@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Signing out - Hedvig</title>
+    <meta name="google-signin-client_id" content="{{ clientId | escape }}">
+    <script src="https://apis.google.com/js/platform.js?onload=signOut" async defer></script>
+    <link rel="stylesheet" href="/assets/style-base.css" type="text/css" />
+    <link rel="stylesheet" href="/assets/style-sso.css" type="text/css" />
+</head>
+<body class="sso-body">
+<div class="main-wrapper">
+    <div class="main">
+        <h1>Employee sign in</h1>
+        <img src="https://cdn.hedvig.com/identity/graphics/hedvig-symbol-color.svg" width="50" />
+
+        <p>You're being redirected...</p>
+
+        <div class="grant-error">{{ error }}</div>
+    </div>
+</div>
+</body>
+</html>
