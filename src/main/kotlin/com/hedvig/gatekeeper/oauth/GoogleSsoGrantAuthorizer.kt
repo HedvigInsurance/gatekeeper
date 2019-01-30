@@ -1,6 +1,5 @@
 package com.hedvig.gatekeeper.oauth
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.hedvig.gatekeeper.authorization.RoleScopeAssociator
 import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
 import nl.myndocs.oauth2.client.ClientService
