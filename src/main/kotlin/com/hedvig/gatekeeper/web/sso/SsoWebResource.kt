@@ -1,9 +1,10 @@
-package com.hedvig.gatekeeper.web
+package com.hedvig.gatekeeper.web.sso
 
 import com.hedvig.dropwizard.errors.UnhandledErrorMessages
 import com.hedvig.dropwizard.pebble.View
-import com.hedvig.gatekeeper.web.views.GoogleSSoSignoutView
-import com.hedvig.gatekeeper.web.views.GoogleSsoInitView
+import com.hedvig.gatekeeper.web.sso.views.GoogleSSoSignoutView
+import com.hedvig.gatekeeper.web.sso.views.GoogleSsoInitView
+import nl.myndocs.oauth2.exception.InvalidGrantException
 import java.net.URI
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -21,20 +22,17 @@ import javax.ws.rs.core.Response
 @Path("/sso")
 @UnhandledErrorMessages
 class SsoWebResource(
-    private val selfClientId: String,
-    private val selfClientSecret: String,
     private val googleWebClientId: String,
-    private val selfHost: String,
-    private val client: Client = newClient()
+    private val oauth2Client: Oauth2Client
 ) {
     @GET
     @Produces(MediaType.TEXT_HTML)
-    fun getSsoTemplate(): View {
-        return GoogleSsoInitView(googleWebClientId)
+    fun getSsoTemplate(@QueryParam("error") error: String?): View {
+        return GoogleSsoInitView(googleWebClientId, error ?: "")
     }
 
     @GET
-    @Path("logout")
+    @Path("signout")
     @Produces(MediaType.TEXT_HTML)
     fun getSsoSignoutTemplate(): View {
         return GoogleSSoSignoutView(googleWebClientId)
@@ -42,25 +40,29 @@ class SsoWebResource(
 
     @GET
     @Path("/callback/google")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     fun handleCallback(
         @NotNull
         @Valid
         @QueryParam("id_token")
-        idToken: String
+        idToken: String,
+
+        @QueryParam("redirect")
+        redirect: String?
     ): Response {
-        val uri = URI.create("$selfHost/oauth2/token")
-        val result = client.target(uri)
-            .request()
-            .post(Entity.form(MultivaluedHashMap(mapOf(
-                "grant_type" to "google_sso",
-                "client_id" to selfClientId,
-                "client_secret" to selfClientSecret,
-                "google_id_token" to idToken
-            ))))
-            .readEntity(String::class.java)
-        return Response.ok()
-            .entity(result)
-            .build()
+        return try {
+            val result = oauth2Client.grantGoogleSso(idToken)
+
+            Response.ok()
+                .entity(result)
+                .build()
+        } catch (e: InvalidGrantException) {
+            val redirectQuery = redirect?.let { "&redirect=$it" } ?: ""
+
+            Response
+                .temporaryRedirect(URI.create("/sso?error=invalid_grant$redirectQuery"))
+                .build()
+        }
     }
+
 }
