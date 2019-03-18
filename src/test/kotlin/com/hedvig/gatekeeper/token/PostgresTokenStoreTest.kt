@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
+import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
 import org.assertj.core.api.Assertions.assertThat
@@ -18,6 +19,7 @@ internal class PostgresTokenStoreTest {
     fun testDecodesValidAccessToken() {
         val algorithm = Algorithm.HMAC256("abc123")
         val at = JWT.create()
+            .withSubject("blargh")
             .withIssuer("com.hedvig.gatekeeper")
             .withAudience("abc123")
             .withArrayClaim("scopes", arrayOf("MANAGE_MEMBERS"))
@@ -69,13 +71,13 @@ internal class PostgresTokenStoreTest {
             accessToken = "an AT",
             clientId = clientId,
             tokenType = "jwt",
-            username = "blargh",
+            identity = Identity("blargh"),
             expireTime = Instant.now().plusSeconds(1_800),
             scopes = setOf("MANAGE_MEMBERS"),
             refreshToken = RefreshToken(
                 "abc123",
                 Instant.now(),
-                "blargh",
+                Identity("blargh"),
                 clientId,
                 setOf("MANAGE_MEMBERS")
             )

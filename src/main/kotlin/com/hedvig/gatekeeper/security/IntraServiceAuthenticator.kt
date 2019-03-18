@@ -12,7 +12,7 @@ class IntraServiceAuthenticator(
 
         return Optional.of(
             User(
-                name = at.username ?: "system",
+                name = at.identity?.username ?: "system",
                 scopes = at.scopes
             )
         )

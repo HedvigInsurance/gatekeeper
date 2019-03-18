@@ -1,6 +1,7 @@
 package com.hedvig.gatekeeper.token
 
 import com.hedvig.gatekeeper.utils.RandomGenerator
+import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.RefreshToken
 import nl.myndocs.oauth2.token.converter.RefreshTokenConverter
 import org.apache.log4j.LogManager.getLogger
@@ -14,11 +15,10 @@ class SecureRandomRefreshTokenConverter(
     private val expiryTimeInDays: Long
 ) : RefreshTokenConverter {
     private val LOG = getLogger(RefreshTokenConverter::class.java)
-
-    override fun convertToToken(username: String?, clientId: String, requestedScopes: Set<String>): RefreshToken {
-        LOG.debug("Making new refresh token [username=\"$username\"]")
+    override fun convertToToken(identity: Identity?, clientId: String, requestedScopes: Set<String>): RefreshToken {
+        LOG.debug("Making new refresh token [username=\"${identity?.username}\"]")
         return RefreshToken(
-            username = username,
+            identity = identity,
             clientId = clientId,
             scopes = requestedScopes,
             refreshToken = Base64.getEncoder().encodeToString(randomGenerator.getBytes(512)),

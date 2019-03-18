@@ -2,6 +2,7 @@ package com.hedvig.gatekeeper.token
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
 import nl.myndocs.oauth2.token.converter.AccessTokenConverter
@@ -13,15 +14,10 @@ class JWTAccessTokenConverter(
     private val getNow: () -> Instant,
     private val expirationTimeInSeconds: Long
 ) : AccessTokenConverter {
-    override fun convertToToken(
-        username: String?,
-        clientId: String,
-        requestedScopes: Set<String>,
-        refreshToken: RefreshToken?
-    ): AccessToken {
+    override fun convertToToken(identity: Identity?, clientId: String, requestedScopes: Set<String>, refreshToken: RefreshToken?): AccessToken {
         val expires = getNow().plusSeconds(expirationTimeInSeconds)
         val jwt = JWT.create()
-            .withSubject(username)
+            .withSubject(identity!!.username)
             .withJWTId(UUID.randomUUID().toString())
             .withAudience(clientId)
             .withArrayClaim("scopes", requestedScopes.toTypedArray())
@@ -32,7 +28,7 @@ class JWTAccessTokenConverter(
 
         return AccessToken(
             accessToken = jwt,
-            username = username,
+            identity = identity,
             clientId = clientId,
             scopes = requestedScopes,
             expireTime = expires,
