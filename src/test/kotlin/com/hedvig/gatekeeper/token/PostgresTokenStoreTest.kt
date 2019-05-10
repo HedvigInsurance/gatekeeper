@@ -41,7 +41,7 @@ internal class PostgresTokenStoreTest {
         val at = JWT.create()
             .withIssuer("com.hedvig.gatekeeper")
             .withAudience("abc123")
-            .withArrayClaim("scopes", arrayOf("MANAGE_MEMBERS"))
+            .withArrayClaim("scopes", arrayOf(ClientScope.MANAGE_MEMBERS.toString()))
             .withExpiresAt(Date.from(Instant.now().minusSeconds(1)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
@@ -73,13 +73,13 @@ internal class PostgresTokenStoreTest {
             tokenType = "jwt",
             identity = Identity("blargh"),
             expireTime = Instant.now().plusSeconds(1_800),
-            scopes = setOf("MANAGE_MEMBERS"),
+            scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
             refreshToken = RefreshToken(
                 "abc123",
                 Instant.now(),
                 Identity("blargh"),
                 clientId,
-                setOf("MANAGE_MEMBERS")
+                setOf(ClientScope.MANAGE_MEMBERS.toString())
             )
         )
         postgresTokenStore.storeAccessToken(accessToken)
@@ -87,7 +87,7 @@ internal class PostgresTokenStoreTest {
         verify(grantPersistenceManager).storeGrant(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
-            scopes = setOf("MANAGE_MEMBERS"),
+            scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
             grantMethod = "TODO"
         )
         verify(refreshTokenManager).createRefreshToken(
