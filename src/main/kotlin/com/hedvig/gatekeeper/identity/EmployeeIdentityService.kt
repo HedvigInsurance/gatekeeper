@@ -21,7 +21,9 @@ class EmployeeIdentityService(
     }
 
     override fun identityOf(forClient: Client, username: String): Identity? {
-        val result = employeeManager.findByEmail(username).map { Identity(it.email) }.orElse(null)
+        val result = employeeManager.findByEmail(username)
+            .map { employee -> Identity(employee.email, mapOf("role" to employee.role)) }
+            .orElse(null)
 
         if (result == null) {
             LOG.warn("Couldn't authenticate employee [username='$username']")

@@ -157,6 +157,14 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                     ).grantGoogleSso()
                 }
             }
+            tokenInfoCallback = { tokenInfo ->
+                mapOf(
+                    "username" to tokenInfo.identity?.username,
+                    "scopes" to tokenInfo.scopes,
+                    "role" to tokenInfo.identity?.metadata?.get("role")
+                )
+                    .filterNot { entry -> entry.value == null }
+            }
         }
         environment.jersey().register(oauth2Server)
         environment.jersey().register(SsoWebResource(
