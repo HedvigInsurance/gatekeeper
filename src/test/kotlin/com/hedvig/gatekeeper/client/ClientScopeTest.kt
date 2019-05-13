@@ -8,8 +8,8 @@ internal class ClientScopeTest {
     @Test
     fun convertsToAndFromString() {
         val scope = ClientScope.MANAGE_MEMBERS
-        assertThat(scope.toString()).isEqualTo("members/manage")
-        assertThat(ClientScope.fromString("members/manage")).isEqualTo(ClientScope.MANAGE_MEMBERS)
+        assertThat(scope.toString()).isEqualTo("members:manage")
+        assertThat(ClientScope.fromString("members:manage")).isEqualTo(ClientScope.MANAGE_MEMBERS)
     }
 
     @Test

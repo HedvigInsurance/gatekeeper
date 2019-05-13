@@ -62,7 +62,7 @@ internal class EmployeeIdentityServiceTest {
         )
         `when`(employeeManagerStub.findByEmail("foo@bar.baz")).thenReturn(Optional.of(employee))
 
-        assertThat(employeeIdentityService.identityOf(client, employee.email)).isEqualTo(Identity(employee.email))
+        assertThat(employeeIdentityService.identityOf(client, employee.email)).isEqualTo(Identity(employee.email, mapOf("role" to Role.IEX)))
         assertThat(employeeIdentityService.identityOf(client, "not foo@bar.baz")).isNull()
     }
 
