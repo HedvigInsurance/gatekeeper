@@ -159,7 +159,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             }
             tokenInfoCallback = { tokenInfo ->
                 mapOf(
-                    "username" to tokenInfo.identity?.username,
+                    "subject" to tokenInfo.identity?.username,
                     "scopes" to tokenInfo.scopes,
                     "role" to tokenInfo.identity?.metadata?.get("role")
                 )
