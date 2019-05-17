@@ -4,6 +4,7 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
+import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
 import org.assertj.core.api.Assertions.assertThat
@@ -18,6 +19,7 @@ internal class PostgresTokenStoreTest {
     fun testDecodesValidAccessToken() {
         val algorithm = Algorithm.HMAC256("abc123")
         val at = JWT.create()
+            .withSubject("blargh")
             .withIssuer("com.hedvig.gatekeeper")
             .withAudience("abc123")
             .withArrayClaim("scopes", arrayOf("MANAGE_MEMBERS"))
@@ -39,7 +41,7 @@ internal class PostgresTokenStoreTest {
         val at = JWT.create()
             .withIssuer("com.hedvig.gatekeeper")
             .withAudience("abc123")
-            .withArrayClaim("scopes", arrayOf("MANAGE_MEMBERS"))
+            .withArrayClaim("scopes", arrayOf(ClientScope.MANAGE_MEMBERS.toString()))
             .withExpiresAt(Date.from(Instant.now().minusSeconds(1)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
@@ -69,15 +71,15 @@ internal class PostgresTokenStoreTest {
             accessToken = "an AT",
             clientId = clientId,
             tokenType = "jwt",
-            username = "blargh",
+            identity = Identity("blargh"),
             expireTime = Instant.now().plusSeconds(1_800),
-            scopes = setOf("MANAGE_MEMBERS"),
+            scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
             refreshToken = RefreshToken(
                 "abc123",
                 Instant.now(),
-                "blargh",
+                Identity("blargh"),
                 clientId,
-                setOf("MANAGE_MEMBERS")
+                setOf(ClientScope.MANAGE_MEMBERS.toString())
             )
         )
         postgresTokenStore.storeAccessToken(accessToken)
@@ -85,7 +87,7 @@ internal class PostgresTokenStoreTest {
         verify(grantPersistenceManager).storeGrant(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
-            scopes = setOf("MANAGE_MEMBERS"),
+            scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
             grantMethod = "TODO"
         )
         verify(refreshTokenManager).createRefreshToken(

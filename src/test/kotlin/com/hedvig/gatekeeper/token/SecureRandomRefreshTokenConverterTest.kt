@@ -1,6 +1,7 @@
 package com.hedvig.gatekeeper.token
 
 import com.hedvig.gatekeeper.utils.RandomGenerator
+import nl.myndocs.oauth2.identity.Identity
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.`when`
@@ -23,10 +24,10 @@ internal class SecureRandomRefreshTokenConverterTest {
         `when`(randomGenerator.getBytes(512)).thenReturn("very secure".toByteArray(Charsets.UTF_8))
 
         val clientId = UUID.randomUUID()
-        val result = secureRandomRefreshTokenConverter.convertToToken("blargh", clientId.toString(), setOf("MANAGE_MEMBERS"))
+        val result = secureRandomRefreshTokenConverter.convertToToken(Identity("blargh"), clientId.toString(), setOf("MANAGE_MEMBERS"))
 
         assertThat(result.refreshToken).isEqualTo(VERY_SECURE_IN_BASE64)
-        assertThat(result.username).isEqualTo("blargh")
+        assertThat(result.identity?.username).isEqualTo("blargh")
         assertThat(result.clientId).isEqualTo(clientId.toString())
         assertThat(result.scopes).isEqualTo(setOf("MANAGE_MEMBERS"))
     }

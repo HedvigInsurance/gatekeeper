@@ -7,6 +7,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
 import nl.myndocs.oauth2.exception.InvalidClientException
+import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.CodeToken
 import nl.myndocs.oauth2.token.RefreshToken
@@ -29,12 +30,13 @@ class PostgresTokenStore(
                 .withIssuer("com.hedvig.gatekeeper")
                 .build()
                 .verify(token)
+
             return AccessToken(
                 accessToken = token,
                 expireTime = jwt.expiresAt.toInstant(),
                 clientId = jwt.audience[0],
                 tokenType = "jwt",
-                username = jwt.subject,
+                identity = Identity(username = jwt.subject),
                 scopes = jwt.getClaim("scopes").asArray(String::class.java).toSet(),
                 refreshToken = null
             )
@@ -63,7 +65,7 @@ class PostgresTokenStore(
                     scopes = it.scopes.map { scope -> scope.toString() }.toSet(),
                     refreshToken = it.token,
                     clientId = it.clientId.toString(),
-                    username = it.subject,
+                    identity = Identity(username = it.subject),
                     expireTime = it.createdAt.plus(60, ChronoUnit.DAYS)
                 )
             }
@@ -80,7 +82,7 @@ class PostgresTokenStore(
 
     override fun storeAccessToken(accessToken: AccessToken) {
         grantPersistenceManager.storeGrant(
-            subject = accessToken.username!!,
+            subject = accessToken.identity!!.username,
             clientId = UUID.fromString(accessToken.clientId),
             scopes = accessToken.scopes,
             grantMethod = "TODO"
@@ -104,7 +106,7 @@ class PostgresTokenStore(
             throw InvalidClientException()
         }
         refreshTokenManager.createRefreshToken(
-            refreshToken.username ?: "system",
+            refreshToken.identity?.username ?: "system",
             clientId,
             refreshToken.scopes.map { ClientScope.fromString(it) }.toSet(),
             refreshToken.refreshToken

@@ -140,25 +140,31 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             tokenStore = postgresTokenStore
             accessTokenConverter = oauthAccessTokenConverter
             refreshTokenConverter = secureRandomRefreshTokenConverter
-            granters = listOf<GrantingCall.() -> Granter>(
-                {
-                    granter(GOOGLE_SSO) {
-                        GoogleSsoGrantAuthorizer(
-                            ssoVerifier = googleSsoVerifier,
-                            clientService = oauthClientService,
-                            identityService = oauthIdentityService,
-                            converters = Converters(
-                                accessTokenConverter = oauthAccessTokenConverter,
-                                refreshTokenConverter = secureRandomRefreshTokenConverter,
-                                codeTokenConverter = uuidCodeTokenConverter
-                            ),
-                            tokenStore = postgresTokenStore,
-                            callContext = callContext,
-                            employeeManager = employeeManager
-                        ).grantGoogleSso()
-                    }
+            granters = listOf<GrantingCall.() -> Granter> {
+                granter(GOOGLE_SSO) {
+                    GoogleSsoGrantAuthorizer(
+                        ssoVerifier = googleSsoVerifier,
+                        clientService = oauthClientService,
+                        identityService = oauthIdentityService,
+                        converters = Converters(
+                            accessTokenConverter = oauthAccessTokenConverter,
+                            refreshTokenConverter = secureRandomRefreshTokenConverter,
+                            codeTokenConverter = uuidCodeTokenConverter
+                        ),
+                        tokenStore = postgresTokenStore,
+                        callContext = callContext,
+                        employeeManager = employeeManager
+                    ).grantGoogleSso()
                 }
-            )
+            }
+            tokenInfoCallback = { tokenInfo ->
+                mapOf(
+                    "subject" to tokenInfo.identity?.username,
+                    "scopes" to tokenInfo.scopes,
+                    "role" to tokenInfo.identity?.metadata?.get("role")
+                )
+                    .filterNot { entry -> entry.value == null }
+            }
         }
         environment.jersey().register(oauth2Server)
         environment.jersey().register(SsoWebResource(

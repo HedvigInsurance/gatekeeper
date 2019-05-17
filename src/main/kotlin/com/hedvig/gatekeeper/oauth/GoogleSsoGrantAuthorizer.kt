@@ -12,11 +12,11 @@ import nl.myndocs.oauth2.grant.validateScopes
 import nl.myndocs.oauth2.identity.IdentityService
 import nl.myndocs.oauth2.request.CallContext
 import nl.myndocs.oauth2.request.ClientRequest
-import nl.myndocs.oauth2.response.TokenResponse
+import nl.myndocs.oauth2.response.AccessTokenResponder
+import nl.myndocs.oauth2.response.DefaultAccessTokenResponder
 import nl.myndocs.oauth2.scope.ScopeParser
 import nl.myndocs.oauth2.token.TokenStore
 import nl.myndocs.oauth2.token.converter.Converters
-import nl.myndocs.oauth2.token.toMap
 import org.slf4j.LoggerFactory.getLogger
 import java.util.*
 
@@ -33,6 +33,8 @@ class GoogleSsoGrantAuthorizer(
     private val roleScopeAssociator: RoleScopeAssociator = RoleScopeAssociator()
 ) : GrantingCall {
     private val LOG = getLogger(GoogleSsoGrantAuthorizer::class.java)
+    override val accessTokenResponder: AccessTokenResponder
+        get() = DefaultAccessTokenResponder
 
     fun grantGoogleSso() {
         LOG.info("Trying to authorize user from google sso")
@@ -88,10 +90,10 @@ class GoogleSsoGrantAuthorizer(
         }
 
         val accessToken = converters.accessTokenConverter.convertToToken(
-            username = identity.username,
+            identity= identity,
             clientId = client.clientId,
             refreshToken = converters.refreshTokenConverter.convertToToken(
-                username = identity.username,
+                identity = identity,
                 clientId = client.clientId,
                 requestedScopes = requestedScopes
             ),
@@ -100,15 +102,7 @@ class GoogleSsoGrantAuthorizer(
 
         tokenStore.storeAccessToken(accessToken)
 
-        callContext.respondJson(
-            TokenResponse(
-                accessToken = accessToken.accessToken,
-                refreshToken = accessToken.refreshToken!!.refreshToken,
-                expiresIn = accessToken.expiresIn(),
-                tokenType = accessToken.tokenType
-            )
-                .toMap()
-        )
+        callContext.respondJson(accessTokenResponder.createResponse(accessToken))
 
         LOG.info("Successfully authorized user [username='${identity.username}']")
     }
