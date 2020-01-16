@@ -13,11 +13,11 @@ class EmployeeManagerTest {
             it.execute("TRUNCATE employees;")
         }
 
-        val employeeManager = jdbi.onDemand(EmployeeManager::class.java)
+        val dao = jdbi.onDemand(EmployeeDao::class.java)
 
-        employeeManager.newEmployee("foo@hedvig.com")
+        dao.newEmployee("foo@hedvig.com")
 
-        val result = employeeManager.findByEmail("foo@hedvig.com").get()
+        val result = dao.findByEmail("foo@hedvig.com").get()
         assertThat(result.email).isEqualTo("foo@hedvig.com")
     }
 
@@ -28,11 +28,11 @@ class EmployeeManagerTest {
             it.execute("TRUNCATE employees;")
         }
 
-        val employeeManager = jdbi.onDemand(EmployeeManager::class.java)
+        val dao = jdbi.onDemand(EmployeeDao::class.java)
 
-        employeeManager.newEmployee("foo@hedvig.com")
+        dao.newEmployee("foo@hedvig.com")
         assertThrows<EmployeeExistsException> {
-            employeeManager.newEmployee("foo@hedvig.com")
+            dao.newEmployee("foo@hedvig.com")
         }
     }
 }

@@ -11,9 +11,9 @@ internal class RefreshTokenManagerTest {
     fun testCreatesRefreshTokens() {
         val jdbi = JdbiConnector.createForTest()
         jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE refresh_tokens;") }
-        val refreshTokenManager = jdbi.onDemand(RefreshTokenManager::class.java)
+        val refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java)
 
-        val result = refreshTokenManager.createRefreshToken(
+        val result = refreshTokenDao.createRefreshToken(
             "blargh@blargh.com",
             UUID.randomUUID(),
             setOf(ClientScope.MANAGE_MEMBERS),
@@ -22,24 +22,24 @@ internal class RefreshTokenManagerTest {
         assertEquals("blargh@blargh.com", result.subject)
         assertEquals(setOf(ClientScope.MANAGE_MEMBERS), result.scopes)
 
-        assertEquals(result, refreshTokenManager.findUsableRefreshTokenByToken("abc123").get())
+        assertEquals(result, refreshTokenDao.findUsableRefreshTokenByToken("abc123").get())
     }
 
     @Test
     fun testMarksRefreshTokensAsUsed() {
         val jdbi = JdbiConnector.createForTest()
         jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE refresh_tokens;") }
-        val refreshTokenManager = jdbi.onDemand(RefreshTokenManager::class.java)
+        val refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java)
 
-        refreshTokenManager.createRefreshToken(
+        refreshTokenDao.createRefreshToken(
             "blarg@blargh.com",
             UUID.randomUUID(),
             setOf(ClientScope.MANAGE_MEMBERS),
             "abc123"
         )
-        val usedRefreshToken = refreshTokenManager.markAsUsed("abc123")
+        val usedRefreshToken = refreshTokenDao.markAsUsed("abc123")
         assertNotNull(usedRefreshToken.get().usedAt)
-        val result = refreshTokenManager.findUsableRefreshTokenByToken("abc123")
+        val result = refreshTokenDao.findUsableRefreshTokenByToken("abc123")
         assertFalse(result.isPresent)
     }
 }

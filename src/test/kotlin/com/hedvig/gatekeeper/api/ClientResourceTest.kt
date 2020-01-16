@@ -2,9 +2,9 @@ package com.hedvig.gatekeeper.api
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.hedvig.gatekeeper.api.dto.ClientDto
-import com.hedvig.gatekeeper.client.ClientManager
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.client.GrantType
+import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
 import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.security.MockSecurityConfigurer
@@ -22,7 +22,7 @@ import javax.ws.rs.client.Entity
 @ExtendWith(DropwizardExtensionsSupport::class)
 internal class ClientResourceTest {
     private val jdbi = JdbiConnector.createForTest()
-    private val clientManager = jdbi.onDemand(ClientManager::class.java)
+    private val clientDao = jdbi.onDemand(ClientDao::class.java)
     private val client1 = ClientEntity(
         clientId = UUID.randomUUID(),
         clientSecret = "very secret",
@@ -43,7 +43,7 @@ internal class ClientResourceTest {
     )
     val resources = MockSecurityConfigurer(setOf("ADMIN_SYSTEM"), setOf("ADMIN_SYSTEM"))
         .configureMockSecurity(ResourceExtension.builder())
-        .addResource(ClientResource(clientManager))
+        .addResource(ClientResource(clientDao))
         .setMapper(Jackson.newObjectMapper().registerModule(KotlinModule()))
         .build()
 
@@ -56,8 +56,8 @@ internal class ClientResourceTest {
 
     @Test
     fun testGetsAll() {
-        clientManager.insert(client1)
-        clientManager.insert(client2)
+        clientDao.insert(client1)
+        clientDao.insert(client2)
 
         val result = resources.target("/admin/clients")
             .request()
@@ -72,7 +72,7 @@ internal class ClientResourceTest {
 
     @Test
     fun testGetsClient() {
-        clientManager.insert(client1)
+        clientDao.insert(client1)
 
         val result = resources.target("/admin/clients/${client1.clientId}")
             .request()

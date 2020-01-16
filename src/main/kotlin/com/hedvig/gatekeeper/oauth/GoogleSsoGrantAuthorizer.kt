@@ -1,7 +1,8 @@
 package com.hedvig.gatekeeper.oauth
 
 import com.hedvig.gatekeeper.authorization.RoleScopeAssociator
-import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
+import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
+import com.hedvig.gatekeeper.authorization.employees.newEmployee
 import nl.myndocs.oauth2.client.ClientService
 import nl.myndocs.oauth2.exception.InvalidGrantException
 import nl.myndocs.oauth2.exception.InvalidIdentityException
@@ -29,7 +30,7 @@ class GoogleSsoGrantAuthorizer(
     override val callContext: CallContext,
     override val converters: Converters,
     private val ssoVerifier: GoogleSsoVerifier,
-    private val employeeManager: EmployeeManager,
+    private val employeeDao: EmployeeDao,
     private val roleScopeAssociator: RoleScopeAssociator = RoleScopeAssociator()
 ) : GrantingCall {
     private val LOG = getLogger(GoogleSsoGrantAuthorizer::class.java)
@@ -63,10 +64,10 @@ class GoogleSsoGrantAuthorizer(
         }
         LOG.info("Successfully verified user from google id token [email='${ssoUser.email}']")
 
-        var employee = employeeManager.findByEmail(ssoUser.email)
+        var employee = employeeDao.findByEmail(ssoUser.email)
         if (!employee.isPresent) {
             LOG.info("Creating employee because they dont exist yet [email='${ssoUser.email}']")
-            employee = Optional.of(employeeManager.newEmployee(ssoUser.email))
+            employee = Optional.of(employeeDao.newEmployee(ssoUser.email))
         }
 
         val identity = identityService.identityOf(client, ssoUser.email)

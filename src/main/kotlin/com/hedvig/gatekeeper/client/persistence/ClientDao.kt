@@ -1,10 +1,12 @@
 package com.hedvig.gatekeeper.client.persistence
 
+import com.hedvig.gatekeeper.api.CreateClientRequestDto
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.customizer.BindBean
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
+import java.time.Instant
 import java.util.*
 
 interface ClientDao {
@@ -65,5 +67,21 @@ interface ClientDao {
             :createdBy
         );"""
     )
-    fun insertClient(@BindBean client: ClientEntity)
+    fun insert(@BindBean client: ClientEntity)
+}
+
+fun ClientDao.create(request: CreateClientRequestDto, createdBy: String): ClientEntity {
+    val clientId = UUID.randomUUID()
+    val clientSecret = UUID.randomUUID().toString()
+    val clientEntity = ClientEntity(
+        clientId = clientId,
+        clientSecret = clientSecret,
+        redirectUris = request.redirectUris,
+        authorizedGrantTypes = request.authorizedGrantTypes,
+        clientScopes = request.clientScopes,
+        createdAt = Instant.now(),
+        createdBy = createdBy
+    )
+    insert(clientEntity)
+    return clientEntity
 }

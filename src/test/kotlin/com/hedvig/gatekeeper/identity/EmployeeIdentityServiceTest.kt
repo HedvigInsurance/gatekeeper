@@ -1,7 +1,7 @@
 package com.hedvig.gatekeeper.identity
 
 import com.hedvig.gatekeeper.authorization.employees.Employee
-import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
+import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
 import com.hedvig.gatekeeper.authorization.employees.Role
 import com.hedvig.gatekeeper.client.ClientScope
 import nl.myndocs.oauth2.client.Client
@@ -16,7 +16,7 @@ import java.util.*
 internal class EmployeeIdentityServiceTest {
     @Test
     fun findsEmployeeAndIntersectsScopes() {
-        val employeeManagerStub = mock(EmployeeManager::class.java)
+        val employeeManagerStub = mock(EmployeeDao::class.java)
 
         val employeeIdentityService = EmployeeIdentityService(employeeManagerStub)
 
@@ -44,7 +44,7 @@ internal class EmployeeIdentityServiceTest {
 
     @Test
     fun findsIdentityForEmployee() {
-        val employeeManagerStub = mock(EmployeeManager::class.java)
+        val employeeManagerStub = mock(EmployeeDao::class.java)
 
         val employeeIdentityService = EmployeeIdentityService(employeeManagerStub)
 
@@ -68,7 +68,7 @@ internal class EmployeeIdentityServiceTest {
 
     @Test
     fun checksValidEmployee() {
-        val employeeManagerStub = mock(EmployeeManager::class.java)
+        val employeeManagerStub = mock(EmployeeDao::class.java)
 
         val employeeIdentityService = EmployeeIdentityService(employeeManagerStub)
 

@@ -26,7 +26,7 @@ internal class ClientDaoTest {
             createdAt = Instant.now(),
             createdBy = "Blargh"
         )
-        dao.insertClient(client)
+        dao.insert(client)
 
         val result = dao.find(client.clientId).get()
         assertEquals(client.clientId, result.clientId)
@@ -65,8 +65,8 @@ internal class ClientDaoTest {
             createdAt = Instant.now(),
             createdBy = "Blargh 2"
         )
-        dao.insertClient(client1)
-        dao.insertClient(client2)
+        dao.insert(client1)
+        dao.insert(client2)
 
         val result = dao.findAll()
         assertArrayEquals(result, arrayOf(client2, client1))

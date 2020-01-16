@@ -10,7 +10,6 @@ class GrantPersistenceManagerTest {
     @Test
     fun testPersistsGrant() {
         val jdbi = JdbiConnector.createForTest()
-        val manager = jdbi.onDemand(GrantPersistenceManager::class.java)
         val dao = jdbi.onDemand(GrantDao::class.java)
         jdbi.useHandle<RuntimeException> {
             it.execute("TRUNCATE grants;")
@@ -24,7 +23,7 @@ class GrantPersistenceManagerTest {
             scopes = setOf("FOO"),
             grantedAt = Instant.now()
         )
-        val storedGrant = manager.storeGrant(
+        val storedGrant = dao.storeGrant(
             subject = grantToSave.subject,
             grantMethod = grantToSave.grantMethod,
             clientId = grantToSave.clientId,

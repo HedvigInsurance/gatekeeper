@@ -3,3 +3,5 @@
 /.env
 /tmp/*
 !/tmp/docker-compose-db.yml
+
+*.iml

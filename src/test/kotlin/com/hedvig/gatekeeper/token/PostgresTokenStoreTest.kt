@@ -3,7 +3,8 @@ package com.hedvig.gatekeeper.token
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
+import com.hedvig.gatekeeper.oauth.persistence.GrantDao
+import com.hedvig.gatekeeper.oauth.persistence.storeGrant
 import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
@@ -26,8 +27,8 @@ internal class PostgresTokenStoreTest {
             .withExpiresAt(Date.from(Instant.now().plusSeconds(1_799)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenManager = mock(RefreshTokenManager::class.java),
-            grantPersistenceManager = mock(GrantPersistenceManager::class.java),
+            refreshTokenDao = mock(RefreshTokenDao::class.java),
+            grantDao = mock(GrantDao::class.java),
             algorithm = algorithm
         )
 
@@ -45,8 +46,8 @@ internal class PostgresTokenStoreTest {
             .withExpiresAt(Date.from(Instant.now().minusSeconds(1)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenManager = mock(RefreshTokenManager::class.java),
-            grantPersistenceManager = mock(GrantPersistenceManager::class.java),
+            refreshTokenDao = mock(RefreshTokenDao::class.java),
+            grantDao = mock(GrantDao::class.java),
             algorithm = algorithm
         )
 
@@ -58,11 +59,11 @@ internal class PostgresTokenStoreTest {
     @Test
     fun testStoresRefreshTokenAndGrant() {
         val algorithm = Algorithm.HMAC256("abc123")
-        val refreshTokenManager = mock(RefreshTokenManager::class.java)
-        val grantPersistenceManager = mock(GrantPersistenceManager::class.java)
+        val refreshTokenDao = mock(RefreshTokenDao::class.java)
+        val grantPersistenceDao = mock(GrantDao::class.java)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenManager = refreshTokenManager,
-            grantPersistenceManager = grantPersistenceManager,
+            refreshTokenDao = mock(RefreshTokenDao::class.java),
+            grantDao =  grantPersistenceDao,
             algorithm = algorithm
         )
 
@@ -84,13 +85,13 @@ internal class PostgresTokenStoreTest {
         )
         postgresTokenStore.storeAccessToken(accessToken)
 
-        verify(grantPersistenceManager).storeGrant(
+        verify(grantPersistenceDao).storeGrant(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
             scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
             grantMethod = "TODO"
         )
-        verify(refreshTokenManager).createRefreshToken(
+        verify(refreshTokenDao).createRefreshToken(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
             scopes = setOf(ClientScope.MANAGE_MEMBERS),
