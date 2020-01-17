@@ -18,4 +18,4 @@ Database Migrations
 We use Liquibase for database migrations, please refer to the docs for how to use it. Here's a TLDR:
   - Migrations live under `./resources/migrations/`
   - Create target `mvn clean install -DskipTests`
-  - To run pending migrations, use `java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar db migrate --catalog migrations config.yml`
+  - To run pending migrations, use `java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar db migrate config.yml`

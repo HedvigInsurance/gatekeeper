@@ -19,9 +19,8 @@ env:
     - DATABASE_URL=postgres://postgres@127.0.0.1:5432/gatekeeper?sslmode=disable
 before_script:
   - psql -c 'CREATE DATABASE gatekeeper;' -U postgres
-  - sudo curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/download/v1.4.1/dbmate-linux-amd64
-  - sudo chmod +x /usr/local/bin/dbmate
-  - dbmate up
+  - mvn clean install -DskipTests
+  - java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar db migrate config.yml
 
 script:
   - ./mvnw clean install
