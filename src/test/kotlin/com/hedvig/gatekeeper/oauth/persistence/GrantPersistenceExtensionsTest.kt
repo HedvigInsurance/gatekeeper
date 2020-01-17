@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
-class GrantPersistenceManagerTest {
+class GrantPersistenceExtensionsTest {
     @Test
     fun testPersistsGrant() {
         val jdbi = JdbiConnector.createForTest()

@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class EmployeeManagerTest {
+class EmployeeExtensionsTest {
     @Test
     fun createsAndFindsEmployee() {
         val jdbi = JdbiConnector.createForTest()

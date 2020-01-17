@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
-internal class ClientManagerTest {
+internal class ClientExtensionsTest {
     @Test
     internal fun testCreatesAClientFromARequest() {
         val jdbi = JdbiConnector.createForTest()

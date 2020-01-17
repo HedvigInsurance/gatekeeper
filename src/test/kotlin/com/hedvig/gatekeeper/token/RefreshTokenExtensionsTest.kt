@@ -6,7 +6,7 @@ import org.junit.Assert.*
 import org.junit.jupiter.api.Test
 import java.util.*
 
-internal class RefreshTokenManagerTest {
+internal class RefreshTokenExtensionsTest {
     @Test
     fun testCreatesRefreshTokens() {
         val jdbi = JdbiConnector.createForTest()
