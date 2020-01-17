@@ -13,6 +13,7 @@ addons:
       - docker-ce
 env:
   global:
+    - DATABASE_JDBC=jdbc:postgresql://127.0.0.1:5432/gatekeeper
     - DATABASE_TEST_JDBC=jdbc:postgresql://127.0.0.1:5432/gatekeeper
     - DATABASE_TEST_USER=postgres
     - DATABASE_TEST_PASSWORD=''
