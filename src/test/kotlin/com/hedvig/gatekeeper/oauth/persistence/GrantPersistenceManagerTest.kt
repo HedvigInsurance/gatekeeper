@@ -1,19 +1,29 @@
 package com.hedvig.gatekeeper.oauth.persistence
 
-import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.junit.Assert.assertEquals
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 class GrantPersistenceExtensionsTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun testPersistsGrant() {
-        val jdbi = JdbiConnector.createForTest()
-        val dao = jdbi.onDemand(GrantDao::class.java)
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE grants;")
-        }
+        val dao = jdbiTestHelper.jdbi.onDemand(GrantDao::class.java)
 
         val grantToSave = Grant(
             id = UUID.randomUUID(),

@@ -1,17 +1,31 @@
 package com.hedvig.gatekeeper.token
 
 import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.db.JdbiConnector
-import org.junit.Assert.*
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.util.*
+import java.util.UUID
 
 internal class RefreshTokenExtensionsTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun testCreatesRefreshTokens() {
-        val jdbi = JdbiConnector.createForTest()
-        jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE refresh_tokens;") }
-        val refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java)
+        val refreshTokenDao = jdbiTestHelper.jdbi.onDemand(RefreshTokenDao::class.java)
 
         val result = refreshTokenDao.createRefreshToken(
             "blargh@blargh.com",
@@ -27,9 +41,7 @@ internal class RefreshTokenExtensionsTest {
 
     @Test
     fun testMarksRefreshTokensAsUsed() {
-        val jdbi = JdbiConnector.createForTest()
-        jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE refresh_tokens;") }
-        val refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java)
+        val refreshTokenDao = jdbiTestHelper.jdbi.onDemand(RefreshTokenDao::class.java)
 
         refreshTokenDao.createRefreshToken(
             "blarg@blargh.com",

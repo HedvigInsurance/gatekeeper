@@ -2,18 +2,31 @@ package com.hedvig.gatekeeper.token
 
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
 class RefreshTokenDaoTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun testCreatesAndFindsUnusedRefreshTokens() {
-        val jdbi = JdbiConnector.createForTest()
-        jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE refresh_tokens;") }
-        val refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java)
+        val refreshTokenDao = jdbiTestHelper.jdbi.onDemand(RefreshTokenDao::class.java)
 
         val refreshToken = RefreshTokenEntity(
             id = UUID.randomUUID(),
@@ -33,9 +46,7 @@ class RefreshTokenDaoTest {
 
     @Test
     fun testMarksAsUsedAndDoesntFindThemAfter() {
-        val jdbi = JdbiConnector.createForTest()
-        jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE refresh_tokens;") }
-        val refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java)
+        val refreshTokenDao = jdbiTestHelper.jdbi.onDemand(RefreshTokenDao::class.java)
 
         val refreshToken = RefreshTokenEntity(
             id = UUID.randomUUID(),

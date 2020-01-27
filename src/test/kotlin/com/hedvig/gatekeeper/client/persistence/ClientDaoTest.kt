@@ -3,19 +3,30 @@ package com.hedvig.gatekeeper.client.persistence
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.client.GrantType
 import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.junit.Assert.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
 internal class ClientDaoTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun testInsertsAndFindsClientByIdAndSecret() {
-        val jdbi = JdbiConnector.createForTest()
-        val dao = jdbi.onDemand(ClientDao::class.java)
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE clients;")
-        }
+        val dao = jdbiTestHelper.jdbi.onDemand(ClientDao::class.java)
 
         val client = ClientEntity(
             clientId = UUID.randomUUID(),
@@ -41,11 +52,7 @@ internal class ClientDaoTest {
 
     @Test
     fun testInsertsAndFindsAllClients() {
-        val jdbi = JdbiConnector.createForTest()
-        val dao = jdbi.onDemand(ClientDao::class.java)
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE clients;")
-        }
+        val dao = jdbiTestHelper.jdbi.onDemand(ClientDao::class.java)
 
         val client1 = ClientEntity(
             clientId = UUID.randomUUID(),

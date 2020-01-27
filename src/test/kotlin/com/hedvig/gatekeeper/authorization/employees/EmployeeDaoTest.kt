@@ -1,20 +1,29 @@
 package com.hedvig.gatekeeper.authorization.employees
 
-import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 class EmployeeDaoTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun createsAndFindsEmployee() {
-        val jdbi = JdbiConnector.createForTest()
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE employees;")
-        }
-
-        val employeeDao = jdbi.onDemand(EmployeeDao::class.java)
+        val employeeDao = jdbiTestHelper.jdbi.onDemand(EmployeeDao::class.java)
 
         val employee = Employee(
             id = UUID.randomUUID(),
