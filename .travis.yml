@@ -20,6 +20,12 @@ env:
     - DATABASE_USER=blarg
     - DATABASE_PASSWORD=blarg
     - DATABASE_URL=postgres://postgres@127.0.0.1:5432/gatekeeper?sslmode=disable
+    - JWT_SECRET=very secure
+    - GOOGLE_CLIENT_ID=blarg
+    - GOOGLE_CLIENT_SECRET=blarg
+    - GOOGLE_WEB_CLIENT_ID=blarg
+    - SELF_OAUTH2_CLIENT_ID=blarg
+    - SELF_OAUTH2_CLIENT_SECRET=blarg
 before_script:
   - psql -c 'CREATE DATABASE gatekeeper;' -U postgres
   - mvn clean install -DskipTests
