@@ -12,6 +12,7 @@ import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
 import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
 import com.hedvig.gatekeeper.client.PostgresClientService
+import com.hedvig.gatekeeper.client.command.CreateClientCommand
 import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.ChainedIdentityService
@@ -82,6 +83,8 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         )
 
         bootstrap.objectMapper.registerModule(KotlinModule())
+
+        bootstrap.addCommand(CreateClientCommand())
     }
 
     override fun run(configuration: GatekeeperConfiguration, environment: Environment) {

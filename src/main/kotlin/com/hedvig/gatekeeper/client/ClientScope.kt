@@ -1,5 +1,7 @@
 package com.hedvig.gatekeeper.client
 
+import com.fasterxml.jackson.annotation.JsonCreator
+
 enum class ClientScope(private val publicName: String) {
     MANAGE_EMPLOYEES("employees:manage"),
     MANAGE_MEMBERS("members:manage"),
@@ -14,6 +16,8 @@ enum class ClientScope(private val publicName: String) {
     override fun toString(): String = publicName
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fromString(string: String): ClientScope {
             val publicNames = values().map { value -> value.publicName }
             if (string !in publicNames) {

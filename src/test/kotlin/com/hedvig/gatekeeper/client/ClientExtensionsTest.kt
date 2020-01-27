@@ -4,7 +4,6 @@ import com.hedvig.gatekeeper.api.CreateClientRequestDto
 import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
 import com.hedvig.gatekeeper.client.persistence.create
-import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Assert.assertTrue
