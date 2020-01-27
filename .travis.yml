@@ -16,9 +16,14 @@ env:
     - DATABASE_TEST_JDBC=jdbc:postgresql://127.0.0.1:5432/gatekeeper
     - DATABASE_TEST_USER=postgres
     - DATABASE_TEST_PASSWORD=''
+    - DATABASE_JDBC=blarg
+    - DATABASE_USER=blarg
+    - DATABASE_PASSWORD=blarg
     - DATABASE_URL=postgres://postgres@127.0.0.1:5432/gatekeeper?sslmode=disable
 before_script:
   - psql -c 'CREATE DATABASE gatekeeper;' -U postgres
+  - mvn clean install -DskipTests
+  - java -jar target/gatekeeper-0.1.0-SNAPSHOT.jar db migrate config.yml
 
 script:
   - ./mvnw clean install
