@@ -85,17 +85,20 @@ internal class PostgresTokenStoreTest {
         )
         postgresTokenStore.storeAccessToken(accessToken)
 
-        verify(grantPersistenceDao).storeGrant(
+        val grant = grantPersistenceDao.storeGrant(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
             scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
             grantMethod = "TODO"
         )
-        verify(refreshTokenDao).createRefreshToken(
+        val token = refreshTokenDao.createRefreshToken(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
             scopes = setOf(ClientScope.MANAGE_MEMBERS),
             token = "abc123"
         )
+
+        assertThat(grant).isNotNull
+        assertThat(token).isNotNull
     }
 }
