@@ -7,10 +7,13 @@ import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.jdbi3.JdbiFactory
 import io.dropwizard.setup.Environment
 import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.core.kotlin.KotlinPlugin
 //import org.jdbi.v3.core.kotlin.KotlinPlugin
 import org.jdbi.v3.core.statement.Query
+import org.jdbi.v3.postgres.PostgresPlugin
 //import org.jdbi.v3.postgres.PostgresPlugin
 import org.jdbi.v3.sqlobject.SqlObjectPlugin
+import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 //import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory.getLogger
@@ -63,10 +66,10 @@ class JdbiConnector {
 
         private fun setupJdbi(jdbi: Jdbi): Jdbi {
             return jdbi
-//                .installPlugin(SqlObjectPlugin())
-//                .installPlugin(PostgresPlugin())
-//                .installPlugin(KotlinPlugin())
-//                .installPlugin(KotlinSqlObjectPlugin())
+                .installPlugin(SqlObjectPlugin())
+                .installPlugin(PostgresPlugin())
+                .installPlugin(KotlinPlugin())
+                .installPlugin(KotlinSqlObjectPlugin())
 
                 .registerArgument(GrantTypeSetSqlArgumentFactory())
                 .registerArgument(ClientScopeSetSqlargumentFactory())
