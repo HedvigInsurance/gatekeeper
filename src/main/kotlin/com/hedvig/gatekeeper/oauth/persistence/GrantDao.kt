@@ -17,8 +17,4 @@ interface GrantDao {
         VALUES (:id, :subject, :grantMethod, :clientId, :scopes, :grantedAt)
     """)
     fun insert(@BindBean grant: Grant)
-
-    companion object {
-        val LOG: Logger = getLogger(GrantDao::class.java)
-    }
 }

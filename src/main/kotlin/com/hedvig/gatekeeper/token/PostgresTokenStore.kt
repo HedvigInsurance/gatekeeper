@@ -21,7 +21,7 @@ class PostgresTokenStore(
     private val grantRepository: GrantRepository,
     private val algorithm: Algorithm
 ) : TokenStore {
-    private val LOG = getLogger(TokenStore::class.java)
+    private val LOG = getLogger(PostgresTokenStore::class.java)
 
     override fun accessToken(token: String): AccessToken? {
         try {

@@ -4,6 +4,8 @@ import com.hedvig.gatekeeper.oauth.persistence.Grant
 import com.hedvig.gatekeeper.oauth.persistence.GrantDao
 import org.jdbi.v3.core.Jdbi
 import org.jdbi.v3.sqlobject.kotlin.attach
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import java.time.Instant
 import java.util.*
 
@@ -20,7 +22,7 @@ class GrantRepository(private val jdbi: Jdbi) {
     }
 
     fun storeGrant(subject: String, grantMethod: String, clientId: UUID, scopes: Set<String>): Grant {
-        GrantDao.LOG.info("Storing grant [subject=$subject method=$grantMethod clientId=$clientId]")
+        LOG.info("Storing grant [subject=$subject method=$grantMethod clientId=$clientId]")
 
         val grant = Grant(
             id = UUID.randomUUID(),
@@ -35,4 +37,7 @@ class GrantRepository(private val jdbi: Jdbi) {
         return grant
     }
 
+    companion object {
+        val LOG: Logger = LoggerFactory.getLogger(GrantRepository::class.java)
+    }
 }

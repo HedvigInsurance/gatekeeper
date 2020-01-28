@@ -26,8 +26,8 @@ class EmployeeIdentityService(
             ?.let { employee -> Identity(employee.email, mapOf("role" to employee.role)) }
 
         result?.let {
-            LOG.warn("Couldn't authenticate employee [username='$username']")
-        } ?: LOG.info("Successfully authenticated employee [username='$username']")
+            LOG.info("Successfully authenticated employee [username='$username']")
+        } ?: LOG.warn("Couldn't authenticate employee [username='$username']")
 
         return result
     }

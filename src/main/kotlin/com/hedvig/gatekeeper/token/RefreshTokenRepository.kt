@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory.getLogger
 
 class RefreshTokenRepository(private val jdbi: Jdbi) {
     fun findUsableRefreshTokenByToken(token: String): RefreshTokenEntity? {
-        GrantDao.LOG.info("Finding usable refresh token")
+        LOG.info("Finding usable refresh token")
         return jdbi.withHandle<RefreshTokenEntity?, RuntimeException> { handle ->
             handle.attach<RefreshTokenDao>().findUsableRefreshTokenByToken(token)
         }
@@ -26,7 +26,7 @@ class RefreshTokenRepository(private val jdbi: Jdbi) {
     }
 
     fun markAsUsed(token: String): RefreshTokenEntity? {
-        GrantDao.LOG.info("Trying to mark refresh token as used")
+        LOG.info("Trying to mark refresh token as used")
 
         return findUsableRefreshTokenByToken(token)?.let { refreshTokenEntity ->
             jdbi.useHandle<RuntimeException> { handle ->
@@ -48,7 +48,7 @@ class RefreshTokenRepository(private val jdbi: Jdbi) {
         scopes: Set<ClientScope>,
         token: String
     ): RefreshTokenEntity? {
-        GrantDao.LOG.info("Creating refresh token for subject \"$subject\"")
+        LOG.info("Creating refresh token for subject \"$subject\"")
         val refreshToken = RefreshTokenEntity(
             id = UUID.randomUUID(),
             token = token,
