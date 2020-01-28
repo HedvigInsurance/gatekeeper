@@ -1,11 +1,11 @@
 package com.hedvig.gatekeeper.oauth.persistence
 
-import org.apache.log4j.LogManager
-import org.apache.log4j.Logger
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.customizer.BindBean
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory.getLogger
 import java.util.*
 
 interface GrantDao {
@@ -19,6 +19,6 @@ interface GrantDao {
     fun insert(@BindBean grant: Grant)
 
     companion object {
-        val LOG: Logger = LogManager.getLogger(GrantDao::class.java)
+        val LOG: Logger = getLogger(GrantDao::class.java)
     }
 }

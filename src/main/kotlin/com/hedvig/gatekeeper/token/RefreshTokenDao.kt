@@ -23,7 +23,7 @@ interface RefreshTokenDao {
     """
     )
     @RegisterRowMapper(RefreshTokenRowMapper::class)
-    fun findUsableRefreshTokenByToken(@Bind("token") token: String): Optional<RefreshTokenEntity>
+    fun findUsableRefreshTokenByToken(@Bind("token") token: String): RefreshTokenEntity?
 
     @SqlUpdate(
         """
@@ -42,50 +42,5 @@ interface RefreshTokenDao {
     """
     )
     @RegisterRowMapper(RefreshTokenRowMapper::class)
-    fun find(@Bind("id") id: UUID): Optional<RefreshTokenEntity>
-
-
-    companion object {
-        private val LOG = LogManager.getLogger(RefreshTokenDao::class.java)
-    }
-}
-
-
-fun RefreshTokenDao.findUsableRefreshTokenByToken(token: String): Optional<RefreshTokenEntity> {
-    LOG.info("Finding usable refresh token")
-    return findUsableRefreshTokenByToken(token)
-}
-
-fun RefreshTokenDao.markAsUsed(token: String): Optional<RefreshTokenEntity> {
-    LOG.info("Trying to mark refresh token as used")
-    val refreshTokenEntity = findUsableRefreshTokenByToken(token)
-    if (!refreshTokenEntity.isPresent) {
-        return Optional.empty()
-    }
-    markAsUsed(refreshTokenEntity.get().id)
-    LOG.info("Successfully marked refresh token as used [id=${refreshTokenEntity.get().id}]")
-    return find(refreshTokenEntity.get().id)
-}
-
-fun RefreshTokenDao.createRefreshToken(
-    subject: String,
-    clientId: UUID,
-    scopes: Set<ClientScope>,
-    token: String
-): RefreshTokenEntity {
-    LOG.info("Creating refresh token for subject \"$subject\"")
-    val refreshToken = RefreshTokenEntity(
-        id = UUID.randomUUID(),
-        token = token,
-        subject = subject,
-        scopes = scopes,
-        clientId = clientId,
-        createdAt = Instant.now(),
-        usedAt = null,
-        revokedAt = null
-    )
-    insertRefreshToken(refreshToken)
-    LOG.info("Successfully created refresh token [id=${refreshToken.id}]")
-
-    return refreshToken
+    fun find(@Bind("id") id: UUID): RefreshTokenEntity?
 }

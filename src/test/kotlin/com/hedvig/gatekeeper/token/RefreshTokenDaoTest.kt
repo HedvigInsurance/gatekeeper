@@ -1,10 +1,9 @@
 package com.hedvig.gatekeeper.token
 
 import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.db.JdbiConnector
 import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -40,8 +39,8 @@ class RefreshTokenDaoTest {
         )
 
         refreshTokenDao.insertRefreshToken(refreshToken)
-        assertEquals(refreshToken, refreshTokenDao.findUsableRefreshTokenByToken(refreshToken.token).get())
-        assertEquals(refreshToken, refreshTokenDao.find(refreshToken.id).get())
+        assertEquals(refreshToken, refreshTokenDao.findUsableRefreshTokenByToken(refreshToken.token))
+        assertEquals(refreshToken, refreshTokenDao.find(refreshToken.id))
     }
 
     @Test
@@ -62,6 +61,6 @@ class RefreshTokenDaoTest {
         refreshTokenDao.insertRefreshToken(refreshToken)
         refreshTokenDao.markAsUsed(refreshToken.id)
 
-        assertFalse(refreshTokenDao.findUsableRefreshTokenByToken(refreshToken.token).isPresent)
+        assertNull(refreshTokenDao.findUsableRefreshTokenByToken(refreshToken.token))
     }
 }

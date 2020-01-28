@@ -26,7 +26,7 @@ internal class PostgresTokenStoreTest {
             .withExpiresAt(Date.from(Instant.now().plusSeconds(1_799)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenDao = mock(RefreshTokenDao::class.java),
+            refreshTokenRepository = mock(RefreshTokenRepository::class.java),
             grantRepository = mock(GrantRepository::class.java),
             algorithm = algorithm
         )
@@ -45,7 +45,7 @@ internal class PostgresTokenStoreTest {
             .withExpiresAt(Date.from(Instant.now().minusSeconds(1)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenDao = mock(RefreshTokenDao::class.java),
+            refreshTokenRepository = mock(RefreshTokenRepository::class.java),
             grantRepository = mock(GrantRepository::class.java),
             algorithm = algorithm
         )
@@ -58,10 +58,10 @@ internal class PostgresTokenStoreTest {
     @Test
     fun testStoresRefreshTokenAndGrant() {
         val algorithm = Algorithm.HMAC256("abc123")
-        val refreshTokenDao = mock(RefreshTokenDao::class.java)
+        val refreshTokenRepository = mock(RefreshTokenRepository::class.java)
         val grantPersistenceRepository = mock(GrantRepository::class.java)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenDao = mock(RefreshTokenDao::class.java),
+            refreshTokenRepository = refreshTokenRepository,
             grantRepository = grantPersistenceRepository,
             algorithm = algorithm
         )
@@ -90,13 +90,11 @@ internal class PostgresTokenStoreTest {
             scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
             grantMethod = "TODO"
         )
-        val token = refreshTokenDao.createRefreshToken(
+        verify(refreshTokenRepository).createRefreshToken(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
             scopes = setOf(ClientScope.MANAGE_MEMBERS),
             token = "abc123"
         )
-
-        assertThat(token).isNotNull
     }
 }

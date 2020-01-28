@@ -31,6 +31,7 @@ import com.hedvig.gatekeeper.security.User
 import com.hedvig.gatekeeper.token.JWTAccessTokenConverter
 import com.hedvig.gatekeeper.token.PostgresTokenStore
 import com.hedvig.gatekeeper.token.RefreshTokenDao
+import com.hedvig.gatekeeper.token.RefreshTokenRepository
 import com.hedvig.gatekeeper.token.SecureRandomRefreshTokenConverter
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import com.hedvig.gatekeeper.utils.RandomGenerator
@@ -100,7 +101,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
 
         val jwtAlgorithm = Algorithm.HMAC256(configuration.secrets!!.jwtSecret!!)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java),
+            refreshTokenRepository = RefreshTokenRepository(jdbi),
             grantRepository = grantRepository,
             algorithm = jwtAlgorithm
         )
