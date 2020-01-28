@@ -5,7 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
+import com.hedvig.gatekeeper.oauth.GrantRepository
 import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
@@ -17,11 +17,11 @@ import java.time.temporal.ChronoUnit
 import java.util.*
 
 class PostgresTokenStore(
-    private val refreshTokenManager: RefreshTokenManager,
-    private val grantPersistenceManager: GrantPersistenceManager,
+    private val refreshTokenRepository: RefreshTokenRepository,
+    private val grantRepository: GrantRepository,
     private val algorithm: Algorithm
 ) : TokenStore {
-    private val LOG = getLogger(TokenStore::class.java)
+    private val LOG = getLogger(PostgresTokenStore::class.java)
 
     override fun accessToken(token: String): AccessToken? {
         try {
@@ -59,8 +59,7 @@ class PostgresTokenStore(
 
     override fun refreshToken(token: String): RefreshToken? {
         LOG.info("Refreshing refresh token")
-        return refreshTokenManager.markAsUsed(token)
-            .map {
+        return refreshTokenRepository.markAsUsed(token)?.let {
                 RefreshToken(
                     scopes = it.scopes.map { scope -> scope.toString() }.toSet(),
                     refreshToken = it.token,
@@ -69,7 +68,6 @@ class PostgresTokenStore(
                     expireTime = it.createdAt.plus(60, ChronoUnit.DAYS)
                 )
             }
-            .orElse(null)
     }
 
     override fun revokeAccessToken(token: String) {
@@ -81,7 +79,7 @@ class PostgresTokenStore(
     }
 
     override fun storeAccessToken(accessToken: AccessToken) {
-        grantPersistenceManager.storeGrant(
+        grantRepository.storeGrant(
             subject = accessToken.identity!!.username,
             clientId = UUID.fromString(accessToken.clientId),
             scopes = accessToken.scopes,
@@ -105,7 +103,7 @@ class PostgresTokenStore(
             LOG.info("Invalid uuid for client_id [client_id='${refreshToken.clientId}']")
             throw InvalidClientException()
         }
-        refreshTokenManager.createRefreshToken(
+        refreshTokenRepository.createRefreshToken(
             refreshToken.identity?.username ?: "system",
             clientId,
             refreshToken.scopes.map { ClientScope.fromString(it) }.toSet(),

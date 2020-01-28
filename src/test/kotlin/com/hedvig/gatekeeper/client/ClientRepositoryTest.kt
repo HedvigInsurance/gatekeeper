@@ -2,19 +2,33 @@ package com.hedvig.gatekeeper.client
 
 import com.hedvig.gatekeeper.api.CreateClientRequestDto
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
-import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
-internal class ClientManagerTest {
+internal class ClientRepositoryTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
+
     @Test
     internal fun testCreatesAClientFromARequest() {
-        val jdbi = JdbiConnector.createForTest()
-        val manager = jdbi.onDemand(ClientManager::class.java)
-        jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE clients;") }
+        val repository = ClientRepository(jdbiTestHelper.jdbi)
 
         val request = CreateClientRequestDto(
             clientScopes = setOf(ClientScope.MANAGE_EMPLOYEES),
@@ -22,7 +36,7 @@ internal class ClientManagerTest {
             redirectUris = setOf("https://redirect-1")
         )
         val createdBy = "john doe"
-        val result = manager.create(request, createdBy)
+        val result = repository.create(request, createdBy)
 
         assertThat(result.clientScopes).isEqualTo(setOf(ClientScope.MANAGE_EMPLOYEES))
         assertThat(result.authorizedGrantTypes).isEqualTo(setOf(GrantType.PASSWORD))
@@ -33,9 +47,7 @@ internal class ClientManagerTest {
 
     @Test
     fun testInsertsAndFindsClient() {
-        val jdbi = JdbiConnector.createForTest()
-        val manager = jdbi.onDemand(ClientManager::class.java)
-        jdbi.useHandle<RuntimeException> { it.execute("TRUNCATE clients;") }
+        val repository = ClientRepository(jdbiTestHelper.jdbi)
 
         val client = ClientEntity(
             clientId = UUID.randomUUID(),
@@ -46,9 +58,9 @@ internal class ClientManagerTest {
             createdAt = Instant.now(),
             createdBy = "Blargh"
         )
-        manager.insert(client)
+        repository.insert(client)
 
-        val result = manager.find(client.clientId)
-        assertTrue(result.isPresent)
+        val result = repository.find(client.clientId)
+        assertNotNull(result)
     }
 }

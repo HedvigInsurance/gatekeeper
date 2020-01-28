@@ -1,5 +1,6 @@
 package com.hedvig.gatekeeper.client
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonValue
 
 enum class GrantType(val publicName: String) {
@@ -16,6 +17,8 @@ enum class GrantType(val publicName: String) {
     }
 
     companion object {
+        @JsonCreator
+        @JvmStatic
         fun fromPublicString(publicString: String): GrantType {
             return when (publicString) {
                 AUTHORIZATION_CODE.publicName -> AUTHORIZATION_CODE

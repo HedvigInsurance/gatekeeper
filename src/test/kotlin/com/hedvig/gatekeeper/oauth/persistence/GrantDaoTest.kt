@@ -1,19 +1,30 @@
 package com.hedvig.gatekeeper.oauth.persistence
 
-import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.oauth.GrantRepository
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.junit.Assert.assertEquals
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 internal class GrantDaoTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun createsAndFindsGrants() {
-        val jdbi = JdbiConnector.createForTest()
-        val dao = jdbi.onDemand(GrantDao::class.java)
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE grants;")
-        }
+        val repository = GrantRepository(jdbiTestHelper.jdbi)
 
         val grant = Grant(
             id = UUID.randomUUID(),
@@ -23,9 +34,9 @@ internal class GrantDaoTest {
             scopes = setOf("FOO"),
             grantedAt = Instant.now()
         )
-        dao.insert(grant)
+        repository.insert(grant)
 
-        val result = dao.find(grant.id).get()
+        val result = repository.find(grant.id)
         assertEquals(grant, result)
     }
 }

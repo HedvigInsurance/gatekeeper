@@ -3,19 +3,30 @@ package com.hedvig.gatekeeper.client.persistence
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.client.GrantType
 import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.junit.Assert.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
 internal class ClientDaoTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun testInsertsAndFindsClientByIdAndSecret() {
-        val jdbi = JdbiConnector.createForTest()
-        val dao = jdbi.onDemand(ClientDao::class.java)
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE clients;")
-        }
+        val dao = jdbiTestHelper.jdbi.onDemand(ClientDao::class.java)
 
         val client = ClientEntity(
             clientId = UUID.randomUUID(),
@@ -26,26 +37,23 @@ internal class ClientDaoTest {
             createdAt = Instant.now(),
             createdBy = "Blargh"
         )
-        dao.insertClient(client)
+        dao.insert(client)
 
-        val result = dao.find(client.clientId).get()
-        assertEquals(client.clientId, result.clientId)
+        val result = dao.find(client.clientId)
+        assertNotNull(result)
+        assertEquals(client.clientId, result!!.clientId)
         assertEquals(client.redirectUris, result.redirectUris)
         assertEquals(client.authorizedGrantTypes, result.authorizedGrantTypes)
         assertEquals(client.clientScopes, result.clientScopes)
         assertEquals(client.createdBy, result.createdBy)
 
-        val withSecretResult = dao.findClientByIdAndSecret(client.clientId, client.clientSecret).get()
-        assertEquals(client.clientId, withSecretResult.clientId)
+        val withSecretResult = dao.findClientByIdAndSecret(client.clientId, client.clientSecret)
+        assertEquals(client.clientId, withSecretResult?.clientId)
     }
 
     @Test
     fun testInsertsAndFindsAllClients() {
-        val jdbi = JdbiConnector.createForTest()
-        val dao = jdbi.onDemand(ClientDao::class.java)
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE clients;")
-        }
+        val dao = jdbiTestHelper.jdbi.onDemand(ClientDao::class.java)
 
         val client1 = ClientEntity(
             clientId = UUID.randomUUID(),
@@ -65,10 +73,10 @@ internal class ClientDaoTest {
             createdAt = Instant.now(),
             createdBy = "Blargh 2"
         )
-        dao.insertClient(client1)
-        dao.insertClient(client2)
+        dao.insert(client1)
+        dao.insert(client2)
 
         val result = dao.findAll()
-        assertArrayEquals(result, arrayOf(client2, client1))
+        assertEquals(result, listOf(client2, client1))
     }
 }

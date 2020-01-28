@@ -5,7 +5,7 @@ import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.client.GrantType
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 data class ClientDto(
     @JsonProperty("client_id")

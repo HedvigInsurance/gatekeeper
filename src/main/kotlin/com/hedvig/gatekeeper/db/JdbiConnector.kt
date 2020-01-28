@@ -3,7 +3,6 @@ package com.hedvig.gatekeeper.db
 import com.hedvig.gatekeeper.GatekeeperConfiguration
 import com.hedvig.gatekeeper.client.persistence.ClientScopeSetSqlargumentFactory
 import com.hedvig.gatekeeper.client.persistence.GrantTypeSetSqlArgumentFactory
-import com.hedvig.gatekeeper.utils.DotenvFacade
 import io.dropwizard.jdbi3.JdbiFactory
 import io.dropwizard.setup.Environment
 import org.jdbi.v3.core.Jdbi
@@ -14,7 +13,6 @@ import org.jdbi.v3.sqlobject.SqlObjectPlugin
 import org.jdbi.v3.sqlobject.kotlin.KotlinSqlObjectPlugin
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory.getLogger
-import java.util.*
 
 class JdbiConnector {
     companion object {
@@ -34,7 +32,9 @@ class JdbiConnector {
                     )
                     connectionTestJdbi.withHandle<Query, RuntimeException> { it.select("SELECT 1") }
                     logger.info("Successfully connected to and pinged database, setting up real connection");
-                    return setupJdbi(JdbiFactory().build(environment, configuration.dataSourceFactory, "postgresql"))
+                    return JdbiFactory()
+                        .build(environment, configuration.dataSourceFactory, "postgresql")
+                        .install()
                 } catch (e: InterruptedException) {
                     logger.error("Thread interrupted while trying to connect to DB")
                     throw RuntimeException("Thread interrupted while trying to connect to DB", e)
@@ -47,29 +47,16 @@ class JdbiConnector {
             logger.error("Finally cannot connect to DB after 30 attempts")
             throw RuntimeException("Finally cannot connect to DB")
         }
-
-        fun createForTest(): Jdbi {
-            val jdbc = requireNotNull(DotenvFacade.getSingleton().getenv("DATABASE_TEST_JDBC")) { "Test JDBC cannot be null" }
-            val user = requireNotNull(DotenvFacade.getSingleton().getenv("DATABASE_TEST_USER")) { "Database test user cannot be null" }
-            val password = DotenvFacade.getSingleton().getenv("DATABASE_TEST_PASSWORD")
-
-            val props = Properties()
-            props["user"] = user
-            if (password != null) {
-                props["password"] = password
-            }
-            return setupJdbi(Jdbi.create(jdbc, props))
-        }
-
-        private fun setupJdbi(jdbi: Jdbi): Jdbi {
-            return jdbi
-                .installPlugin(SqlObjectPlugin())
-                .installPlugin(PostgresPlugin())
-                .installPlugin(KotlinPlugin())
-                .installPlugin(KotlinSqlObjectPlugin())
-
-                .registerArgument(GrantTypeSetSqlArgumentFactory())
-                .registerArgument(ClientScopeSetSqlargumentFactory())
-        }
     }
+}
+
+fun Jdbi.install(): Jdbi {
+    return this
+        .installPlugin(SqlObjectPlugin())
+        .installPlugin(PostgresPlugin())
+        .installPlugin(KotlinPlugin())
+        .installPlugin(KotlinSqlObjectPlugin())
+
+        .registerArgument(GrantTypeSetSqlArgumentFactory())
+        .registerArgument(ClientScopeSetSqlargumentFactory())
 }

@@ -3,16 +3,33 @@ package com.hedvig.gatekeeper.client
 import com.hedvig.gatekeeper.api.CreateClientRequestDto
 import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
-import org.jdbi.v3.sqlobject.CreateSqlObject
-import org.jdbi.v3.sqlobject.transaction.Transaction
+import org.jdbi.v3.core.Jdbi
+import org.jdbi.v3.sqlobject.kotlin.attach
 import java.time.Instant
 import java.util.*
 
-interface ClientManager {
-    @CreateSqlObject
-    fun clientDao(): ClientDao
+class ClientRepository(private val jdbi: Jdbi) {
+    fun find(clientId: UUID) =
+        jdbi.withHandle<ClientEntity?, RuntimeException> { handle ->
+            handle.attach<ClientDao>().find(clientId)
+        }
 
-    @Transaction
+    fun findClientByIdAndSecret(clientId: UUID, clientSecret: String) =
+        jdbi.withHandle<ClientEntity?, RuntimeException> { handle ->
+            handle.attach<ClientDao>().findClientByIdAndSecret(clientId, clientSecret)
+        }
+
+    fun findAll(): List<ClientEntity> =
+        jdbi.withHandle<List<ClientEntity>, RuntimeException> { handle ->
+            handle.attach<ClientDao>().findAll()
+        }
+
+    fun insert(client: ClientEntity) {
+        jdbi.useHandle<RuntimeException> { handle ->
+            handle.attach<ClientDao>().insert(client)
+        }
+    }
+
     fun create(request: CreateClientRequestDto, createdBy: String): ClientEntity {
         val clientId = UUID.randomUUID()
         val clientSecret = UUID.randomUUID().toString()
@@ -27,18 +44,5 @@ interface ClientManager {
         )
         insert(clientEntity)
         return clientEntity
-    }
-
-    @Transaction
-    fun insert(client: ClientEntity) {
-        clientDao().insertClient(client)
-    }
-
-    fun find(clientId: UUID): Optional<ClientEntity> {
-        return clientDao().find(clientId)
-    }
-
-    fun findAll(): Array<ClientEntity> {
-        return clientDao().findAll()
     }
 }

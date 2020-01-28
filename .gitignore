@@ -1,5 +1,6 @@
 /target
 /lib
 /.env
-/tmp/*
-!/tmp/docker-compose-db.yml
+/.idea
+
+*.iml

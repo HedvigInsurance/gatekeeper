@@ -1,7 +1,7 @@
 package com.hedvig.gatekeeper.identity
 
 import com.hedvig.gatekeeper.authorization.employees.Employee
-import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
+import com.hedvig.gatekeeper.authorization.employees.EmployeeRepository
 import com.hedvig.gatekeeper.authorization.employees.Role
 import com.hedvig.gatekeeper.client.ClientScope
 import nl.myndocs.oauth2.client.Client
@@ -16,9 +16,9 @@ import java.util.*
 internal class EmployeeIdentityServiceTest {
     @Test
     fun findsEmployeeAndIntersectsScopes() {
-        val employeeManagerStub = mock(EmployeeManager::class.java)
+        val employeeRepositoryStub = mock(EmployeeRepository::class.java)
 
-        val employeeIdentityService = EmployeeIdentityService(employeeManagerStub)
+        val employeeIdentityService = EmployeeIdentityService(employeeRepositoryStub)
 
         val client = Client(
             clientId = UUID.randomUUID().toString(),
@@ -32,7 +32,7 @@ internal class EmployeeIdentityServiceTest {
             role = Role.IEX,
             firstGrantedAt = Instant.now()
         )
-        `when`(employeeManagerStub.findByEmail("foo@bar.baz")).thenReturn(Optional.of(employee))
+        `when`(employeeRepositoryStub.findByEmail("foo@bar.baz")).thenReturn(employee)
 
         val result = employeeIdentityService.allowedScopes(
             client,
@@ -44,9 +44,9 @@ internal class EmployeeIdentityServiceTest {
 
     @Test
     fun findsIdentityForEmployee() {
-        val employeeManagerStub = mock(EmployeeManager::class.java)
+        val employeeRepositoryStub = mock(EmployeeRepository::class.java)
 
-        val employeeIdentityService = EmployeeIdentityService(employeeManagerStub)
+        val employeeIdentityService = EmployeeIdentityService(employeeRepositoryStub)
 
         val client = Client(
             clientId = UUID.randomUUID().toString(),
@@ -60,7 +60,7 @@ internal class EmployeeIdentityServiceTest {
             role = Role.IEX,
             firstGrantedAt = Instant.now()
         )
-        `when`(employeeManagerStub.findByEmail("foo@bar.baz")).thenReturn(Optional.of(employee))
+        `when`(employeeRepositoryStub.findByEmail("foo@bar.baz")).thenReturn(employee)
 
         assertThat(employeeIdentityService.identityOf(client, employee.email)).isEqualTo(Identity(employee.email, mapOf("role" to Role.IEX)))
         assertThat(employeeIdentityService.identityOf(client, "not foo@bar.baz")).isNull()
@@ -68,9 +68,9 @@ internal class EmployeeIdentityServiceTest {
 
     @Test
     fun checksValidEmployee() {
-        val employeeManagerStub = mock(EmployeeManager::class.java)
+        val employeeRepositoryStub = mock(EmployeeRepository::class.java)
 
-        val employeeIdentityService = EmployeeIdentityService(employeeManagerStub)
+        val employeeIdentityService = EmployeeIdentityService(employeeRepositoryStub)
 
         val client = Client(
             clientId = UUID.randomUUID().toString(),
@@ -84,7 +84,7 @@ internal class EmployeeIdentityServiceTest {
             role = Role.IEX,
             firstGrantedAt = Instant.now()
         )
-        `when`(employeeManagerStub.findByEmail("foo@bar.baz")).thenReturn(Optional.of(employee))
+        `when`(employeeRepositoryStub.findByEmail("foo@bar.baz")).thenReturn(employee)
 
         assertThat(employeeIdentityService.validCredentials(client, Identity(employee.email), "blargh")).isTrue()
         assertThat(employeeIdentityService.validCredentials(client, Identity("not foo@bar.baz"), "blargh")).isFalse()

@@ -1,12 +1,15 @@
 package com.hedvig.gatekeeper.client.persistence
 
+import com.hedvig.gatekeeper.api.CreateClientRequestDto
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.customizer.BindBean
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
+import java.time.Instant
 import java.util.*
 
+@RegisterRowMapper(ClientRowMapper::class)
 interface ClientDao {
     @SqlQuery(
         """
@@ -15,10 +18,9 @@ interface ClientDao {
         WHERE "client_id" = :clientId
             AND "deactivated_at" IS NULL;"""
     )
-    @RegisterRowMapper(ClientRowMapper::class)
     fun find(
         @Bind("clientId") clientId: UUID
-    ): Optional<ClientEntity>
+    ): ClientEntity?
 
     @SqlQuery(
         """
@@ -28,11 +30,10 @@ interface ClientDao {
                 AND "client_secret" = :clientSecret
                 AND "deactivated_at" IS NULL;"""
     )
-    @RegisterRowMapper(ClientRowMapper::class)
     fun findClientByIdAndSecret(
         @Bind("clientId") clientId: UUID,
         @Bind("clientSecret") clientSecret: String
-    ): Optional<ClientEntity>
+    ): ClientEntity?
 
     @SqlQuery(
         """
@@ -42,8 +43,7 @@ interface ClientDao {
         ORDER BY "created_at" DESC
     ;"""
     )
-    @RegisterRowMapper(ClientRowMapper::class)
-    fun findAll(): Array<ClientEntity>
+    fun findAll(): List<ClientEntity>
 
     @SqlUpdate("""
         INSERT INTO clients (
@@ -65,5 +65,5 @@ interface ClientDao {
             :createdBy
         );"""
     )
-    fun insertClient(@BindBean client: ClientEntity)
+    fun insert(@BindBean client: ClientEntity)
 }

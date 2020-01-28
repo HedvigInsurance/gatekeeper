@@ -18,7 +18,7 @@ interface RefreshTokenDao {
     """
     )
     @RegisterRowMapper(RefreshTokenRowMapper::class)
-    fun findUsableRefreshTokenByToken(@Bind("token") token: String): Optional<RefreshTokenEntity>
+    fun findUsableRefreshTokenByToken(@Bind("token") token: String): RefreshTokenEntity?
 
     @SqlUpdate(
         """
@@ -37,5 +37,5 @@ interface RefreshTokenDao {
     """
     )
     @RegisterRowMapper(RefreshTokenRowMapper::class)
-    fun find(@Bind("id") id: UUID): Optional<RefreshTokenEntity>
+    fun find(@Bind("id") id: UUID): RefreshTokenEntity?
 }

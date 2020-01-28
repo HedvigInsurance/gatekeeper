@@ -1,20 +1,30 @@
 package com.hedvig.gatekeeper.oauth.persistence
 
-import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.oauth.GrantRepository
+import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.junit.Assert.assertEquals
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
-class GrantPersistenceManagerTest {
+class GrantPersistenceRepositoryTest {
+    private val jdbiTestHelper = JdbiTestHelper.create()
+
+    @BeforeEach
+    fun before() {
+        jdbiTestHelper.before()
+    }
+
+    @AfterEach
+    fun after() {
+        jdbiTestHelper.after()
+    }
+
     @Test
     fun testPersistsGrant() {
-        val jdbi = JdbiConnector.createForTest()
-        val manager = jdbi.onDemand(GrantPersistenceManager::class.java)
-        val dao = jdbi.onDemand(GrantDao::class.java)
-        jdbi.useHandle<RuntimeException> {
-            it.execute("TRUNCATE grants;")
-        }
+        val repository = GrantRepository(jdbiTestHelper.jdbi)
 
         val grantToSave = Grant(
             id = UUID.randomUUID(),
@@ -24,15 +34,15 @@ class GrantPersistenceManagerTest {
             scopes = setOf("FOO"),
             grantedAt = Instant.now()
         )
-        val storedGrant = manager.storeGrant(
+        val storedGrant = repository.storeGrant(
             subject = grantToSave.subject,
             grantMethod = grantToSave.grantMethod,
             clientId = grantToSave.clientId,
             scopes = grantToSave.scopes
         )
 
-        val result = dao.find(storedGrant.id).get()
-        assertEquals(grantToSave.subject, result.subject)
+        val result = repository.find(storedGrant.id)
+        assertEquals(grantToSave.subject, result!!.subject)
         assertEquals(grantToSave.clientId, result.clientId)
         assertEquals(grantToSave.grantMethod, result.grantMethod)
         assertEquals(grantToSave.scopes, result.scopes)

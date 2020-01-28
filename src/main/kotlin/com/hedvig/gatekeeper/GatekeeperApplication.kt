@@ -10,10 +10,12 @@ import com.hedvig.dropwizard.pebble.PebbleBundle
 import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
-import com.hedvig.gatekeeper.authorization.employees.EmployeeManager
-import com.hedvig.gatekeeper.client.ClientManager
+import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
+import com.hedvig.gatekeeper.authorization.employees.EmployeeRepository
+import com.hedvig.gatekeeper.client.ClientRepository
 import com.hedvig.gatekeeper.client.PostgresClientService
-import com.hedvig.gatekeeper.db.JdbiConnector
+import com.hedvig.gatekeeper.client.command.CreateClientCommand
+import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.ChainedIdentityService
 import com.hedvig.gatekeeper.identity.EmployeeIdentityService
@@ -21,13 +23,15 @@ import com.hedvig.gatekeeper.identity.InMemoryIdentityService
 import com.hedvig.gatekeeper.oauth.GOOGLE_SSO
 import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
-import com.hedvig.gatekeeper.oauth.persistence.GrantPersistenceManager
+import com.hedvig.gatekeeper.oauth.GrantRepository
+import com.hedvig.gatekeeper.oauth.persistence.GrantDao
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
 import com.hedvig.gatekeeper.security.User
 import com.hedvig.gatekeeper.token.JWTAccessTokenConverter
 import com.hedvig.gatekeeper.token.PostgresTokenStore
-import com.hedvig.gatekeeper.token.RefreshTokenManager
+import com.hedvig.gatekeeper.token.RefreshTokenDao
+import com.hedvig.gatekeeper.token.RefreshTokenRepository
 import com.hedvig.gatekeeper.token.SecureRandomRefreshTokenConverter
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import com.hedvig.gatekeeper.utils.RandomGenerator
@@ -41,6 +45,9 @@ import io.dropwizard.auth.AuthValueFactoryProvider
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor
 import io.dropwizard.configuration.SubstitutingSourceProvider
+import io.dropwizard.db.PooledDataSourceFactory
+import io.dropwizard.jdbi3.JdbiFactory
+import io.dropwizard.migrations.MigrationsBundle
 import io.dropwizard.setup.Bootstrap
 import io.dropwizard.setup.Environment
 import nl.myndocs.oauth2.grant.Granter
@@ -67,28 +74,35 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
     override fun initialize(bootstrap: Bootstrap<GatekeeperConfiguration>) {
         bootstrap.addBundle(PebbleBundle())
         bootstrap.addBundle(AssetsBundle("/assets", "/assets"))
+        bootstrap.addBundle(object : MigrationsBundle<GatekeeperConfiguration>() {
+            override fun getDataSourceFactory(configuration: GatekeeperConfiguration): PooledDataSourceFactory =
+                configuration.dataSourceFactory
+        })
 
         val substitutor = EnvironmentVariableSubstitutor(true)
-        substitutor.variableResolver = DotenvEnvironmentVariableLookup(DotenvFacade.getSingleton())
+        substitutor.setVariableResolver(DotenvEnvironmentVariableLookup(DotenvFacade.getSingleton()))
         bootstrap.configurationSourceProvider = SubstitutingSourceProvider(
             bootstrap.configurationSourceProvider,
             substitutor
         )
 
         bootstrap.objectMapper.registerModule(KotlinModule())
+
+        bootstrap.addCommand(CreateClientCommand())
     }
 
     override fun run(configuration: GatekeeperConfiguration, environment: Environment) {
-        val jdbi = JdbiConnector.connect(configuration, environment)
+        val factory = JdbiFactory()
+        val jdbi = factory.build(environment, configuration.dataSourceFactory, "postgresql")
 
-        val clientManager = jdbi.onDemand(ClientManager::class.java)
-        val employeeManager = jdbi.onDemand(EmployeeManager::class.java)
-        val grantPersistenceManager = jdbi.onDemand(GrantPersistenceManager::class.java)
+        val clientRepository = ClientRepository(jdbi)
+        val employeeRepository = EmployeeRepository(jdbi)
+        val grantRepository = GrantRepository(jdbi)
 
         val jwtAlgorithm = Algorithm.HMAC256(configuration.secrets!!.jwtSecret!!)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenManager = jdbi.onDemand(RefreshTokenManager::class.java),
-            grantPersistenceManager = grantPersistenceManager,
+            refreshTokenRepository = RefreshTokenRepository(jdbi),
+            grantRepository = grantRepository,
             algorithm = jwtAlgorithm
         )
 
@@ -108,7 +122,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         environment.jersey().register(AuthValueFactoryProvider.Binder(User::class.java))
         environment.jersey().register(AuthValueFactoryProvider.Binder(User::class.java))
 
-        environment.jersey().register(ClientResource(clientManager))
+        environment.jersey().register(ClientResource(clientRepository))
 
         environment.healthChecks().register("application", ApplicationHealthCheck())
         environment.jersey().register(HealthResource())
@@ -118,10 +132,10 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             { Instant.now() },
             configuration.refreshTokenExpirationTimeInDays!!
         )
-        val oauthClientService = PostgresClientService(clientManager)
+        val oauthClientService = PostgresClientService(clientRepository)
         val oauthIdentityService = ChainedIdentityService(arrayOf(
             InMemoryIdentityService("blargh", "very secure"),
-            EmployeeIdentityService(employeeManager)
+            EmployeeIdentityService(employeeRepository)
         ))
         val oauthAccessTokenConverter = JWTAccessTokenConverter(
             jwtAlgorithm,
@@ -153,7 +167,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                         ),
                         tokenStore = postgresTokenStore,
                         callContext = callContext,
-                        employeeManager = employeeManager
+                        employeeRepository = employeeRepository
                     ).grantGoogleSso()
                 }
             }
