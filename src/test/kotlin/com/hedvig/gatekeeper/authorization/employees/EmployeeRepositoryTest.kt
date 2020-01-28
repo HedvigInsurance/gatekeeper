@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-class EmployeeExtensionsTest {
+class EmployeeRepositoryTest {
     private val jdbiTestHelper = JdbiTestHelper.create()
 
     @BeforeEach
@@ -23,21 +23,21 @@ class EmployeeExtensionsTest {
 
     @Test
     fun createsAndFindsEmployee() {
-        val dao = jdbiTestHelper.jdbi.onDemand(EmployeeDao::class.java)
+        val repository = EmployeeRepository(jdbiTestHelper.jdbi)
 
-        dao.newEmployee("foo@hedvig.com")
+        repository.newEmployee("foo@hedvig.com")
 
-        val result = dao.findByEmail("foo@hedvig.com").get()
-        assertThat(result.email).isEqualTo("foo@hedvig.com")
+        val result = repository.findByEmail("foo@hedvig.com")
+        assertThat(result?.email).isEqualTo("foo@hedvig.com")
     }
 
     @Test
     fun doesntCreateExistingEmployee() {
-        val dao = jdbiTestHelper.jdbi.onDemand(EmployeeDao::class.java)
+        val repository = EmployeeRepository(jdbiTestHelper.jdbi)
 
-        dao.newEmployee("foo@hedvig.com")
+        repository.newEmployee("foo@hedvig.com")
         assertThrows<EmployeeExistsException> {
-            dao.newEmployee("foo@hedvig.com")
+            repository.newEmployee("foo@hedvig.com")
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.hedvig.gatekeeper.client
 
-import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
 import org.junit.Assert.*
 import org.junit.jupiter.api.Test
@@ -11,7 +10,7 @@ import java.util.*
 internal class PostgresClientServiceTest {
     @Test
     internal fun testGetsClient() {
-        val dao = mock(ClientDao::class.java)
+        val repository = mock(ClientRepository::class.java)
         val clientId = UUID.randomUUID()
         val client = ClientEntity(
             clientId = clientId,
@@ -22,27 +21,27 @@ internal class PostgresClientServiceTest {
             createdAt = Instant.now(),
             createdBy = "blargh"
         )
-        `when`(dao.find(eq(clientId) ?: clientId)).thenReturn(client)
+        `when`(repository.find(eq(clientId) ?: clientId)).thenReturn(client)
 
-        val service = PostgresClientService(dao)
+        val service = PostgresClientService(repository)
         val result = service.clientOf(clientId.toString())
         assertEquals(client.toClient(), result)
     }
 
     @Test
     internal fun testDoesntGetEmptyClient() {
-        val dao = mock(ClientDao::class.java)
+        val repository = mock(ClientRepository::class.java)
         val clientId = UUID.randomUUID()
-        `when`(dao.find(eq(clientId) ?: clientId)).thenReturn(null)
+        `when`(repository.find(eq(clientId) ?: clientId)).thenReturn(null)
 
-        val service = PostgresClientService(dao)
+        val service = PostgresClientService(repository)
         val result = service.clientOf(clientId.toString())
         assertNull(result)
     }
 
     @Test
     internal fun testValidatesClient() {
-        val dao = mock(ClientDao::class.java)
+        val repository = mock(ClientRepository::class.java)
         val clientId = UUID.randomUUID()
         val clientEntity = ClientEntity(
             clientId = clientId,
@@ -53,15 +52,15 @@ internal class PostgresClientServiceTest {
             createdAt = Instant.now(),
             createdBy = "blargh"
         )
-        val service = PostgresClientService(dao)
+        val service = PostgresClientService(repository)
 
-        `when`(dao.find(eq(clientId) ?: clientId))
+        `when`(repository.find(eq(clientId) ?: clientId))
             .thenReturn(clientEntity)
 
         val result = service.validClient(clientEntity.toClient(), "very secret")
         assertTrue(result)
 
-        `when`(dao.find(eq(clientId) ?: clientId))
+        `when`(repository.find(eq(clientId) ?: clientId))
             .thenReturn(null)
 
         val result2 = service.validClient(clientEntity.toClient(), "not a valid secret")

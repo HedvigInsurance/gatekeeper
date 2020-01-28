@@ -34,7 +34,7 @@ class EmployeeDaoTest {
 
         employeeDao.insert(employee)
 
-        val result = employeeDao.findByEmail(employee.email).get()
+        val result = employeeDao.findByEmail(employee.email)
         assertThat(result).isEqualTo(employee)
     }
 }

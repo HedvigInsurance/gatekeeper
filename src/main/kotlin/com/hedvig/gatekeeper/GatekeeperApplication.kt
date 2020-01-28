@@ -11,6 +11,7 @@ import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
 import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
+import com.hedvig.gatekeeper.authorization.employees.EmployeeRepository
 import com.hedvig.gatekeeper.client.ClientRepository
 import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.client.command.CreateClientCommand
@@ -92,10 +93,9 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         val factory = JdbiFactory()
         val jdbi = factory.build(environment, configuration.dataSourceFactory, "postgresql")
 
-        val clientDao = jdbi.onDemand(ClientDao::class.java)
         val clientRepository = ClientRepository(jdbi)
 
-        val employeeDao = jdbi.onDemand(EmployeeDao::class.java)
+        val employeeRepository = EmployeeRepository(jdbi)
         val grantDao = jdbi.onDemand(GrantDao::class.java)
 
         val jwtAlgorithm = Algorithm.HMAC256(configuration.secrets!!.jwtSecret!!)
@@ -131,10 +131,10 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             { Instant.now() },
             configuration.refreshTokenExpirationTimeInDays!!
         )
-        val oauthClientService = PostgresClientService(clientDao)
+        val oauthClientService = PostgresClientService(clientRepository)
         val oauthIdentityService = ChainedIdentityService(arrayOf(
             InMemoryIdentityService("blargh", "very secure"),
-            EmployeeIdentityService(employeeDao)
+            EmployeeIdentityService(employeeRepository)
         ))
         val oauthAccessTokenConverter = JWTAccessTokenConverter(
             jwtAlgorithm,
@@ -166,7 +166,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                         ),
                         tokenStore = postgresTokenStore,
                         callContext = callContext,
-                        employeeDao = employeeDao
+                        employeeRepository = employeeRepository
                     ).grantGoogleSso()
                 }
             }

@@ -6,13 +6,13 @@ import nl.myndocs.oauth2.client.ClientService
 import java.util.*
 
 class PostgresClientService(
-    private val clientDao: ClientDao
+    private val clientRepository: ClientRepository
 ) : ClientService {
     override fun clientOf(clientId: String): Client? =
-        clientDao.find(UUID.fromString(clientId))?.toClient()
+        clientRepository.find(UUID.fromString(clientId))?.toClient()
 
     override fun validClient(client: Client, clientSecret: String): Boolean {
-        return clientDao
+        return clientRepository
             .find(UUID.fromString(client.clientId))
             ?.let { it.clientSecret == clientSecret }
             ?: false
