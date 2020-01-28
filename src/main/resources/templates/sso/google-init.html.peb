@@ -5,9 +5,7 @@
     <meta name="viewport"
           content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
     <title>Single Sign On - Hedvig</title>
-    <meta name="google-signin-scope" content="profile email">
-    <meta name="google-signin-client_id" content="{{ clientId | escape }}">
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <script src="https://apis.google.com/js/api:client.js"></script>
     <link rel="stylesheet" href="/assets/style-base.css" type="text/css" />
     <link rel="stylesheet" href="/assets/style-sso.css" type="text/css" />
 </head>
@@ -22,18 +20,33 @@
             <div class="grant-error">Invalid grant</div>
         {% endif %}
 
-        <div class="h-google-signin-wraper">
-            <div class="g-signin2 h-google-signin" data-onsuccess="onSignIn" data-theme="dark"></div>
+        <div class="h-google-signin">
+            <button class="sign-in-button" id="sign-in">Sign in</button>
         </div>
     </div>
 </div>
 
 <script>
-    function onSignIn(googleUser) {
-        window.location.href = '/sso/callback/google?id_token='
-        + encodeURIComponent(googleUser.getAuthResponse().id_token)
-        + '&redirect=' + encodeURIComponent('{{ redirect | escape('js') }}')
-    }
+const button = document.getElementById('sign-in');
+
+gapi.load('auth2', function () {
+    const auth2 = gapi.auth2.init({
+        client_id: '{{ clientId | escape('js') }}',
+        cookiepolicy: 'single_host_origin',
+    });
+
+    auth2.attachClickHandler(
+        button,
+        {},
+        function (googleUser) {
+            window.location =
+                '/sso/callback/google?id_token='
+                + encodeURIComponent(googleUser.getAuthResponse().id_token)
+                + '&redirect=' + encodeURIComponent('{{ redirect | escape('js') }}')
+
+        }
+    )
+});
 </script>
 </body>
 </html>
