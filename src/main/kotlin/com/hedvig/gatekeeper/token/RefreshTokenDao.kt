@@ -1,15 +1,10 @@
 package com.hedvig.gatekeeper.token
 
-import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.oauth.persistence.GrantDao.Companion.LOG
-import org.apache.log4j.LogManager
 import org.jdbi.v3.sqlobject.config.RegisterRowMapper
 import org.jdbi.v3.sqlobject.customizer.Bind
 import org.jdbi.v3.sqlobject.customizer.BindBean
 import org.jdbi.v3.sqlobject.statement.SqlQuery
 import org.jdbi.v3.sqlobject.statement.SqlUpdate
-import org.jdbi.v3.sqlobject.transaction.Transaction
-import java.time.Instant
 import java.util.*
 
 interface RefreshTokenDao {
