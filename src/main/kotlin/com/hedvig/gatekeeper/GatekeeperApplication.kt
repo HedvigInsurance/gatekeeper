@@ -23,6 +23,7 @@ import com.hedvig.gatekeeper.identity.InMemoryIdentityService
 import com.hedvig.gatekeeper.oauth.GOOGLE_SSO
 import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
+import com.hedvig.gatekeeper.oauth.GrantRepository
 import com.hedvig.gatekeeper.oauth.persistence.GrantDao
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
@@ -94,14 +95,13 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         val jdbi = factory.build(environment, configuration.dataSourceFactory, "postgresql")
 
         val clientRepository = ClientRepository(jdbi)
-
         val employeeRepository = EmployeeRepository(jdbi)
-        val grantDao = jdbi.onDemand(GrantDao::class.java)
+        val grantRepository = GrantRepository(jdbi)
 
         val jwtAlgorithm = Algorithm.HMAC256(configuration.secrets!!.jwtSecret!!)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenDao = jdbi.onDemand(RefreshTokenDao::class.java),
-            grantDao = grantDao,
+            grantRepository = grantRepository,
             algorithm = jwtAlgorithm
         )
 

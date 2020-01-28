@@ -5,8 +5,7 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.exceptions.JWTVerificationException
 import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.oauth.persistence.GrantDao
-import com.hedvig.gatekeeper.oauth.persistence.storeGrant
+import com.hedvig.gatekeeper.oauth.GrantRepository
 import nl.myndocs.oauth2.exception.InvalidClientException
 import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
@@ -19,7 +18,7 @@ import java.util.*
 
 class PostgresTokenStore(
     private val refreshTokenDao: RefreshTokenDao,
-    private val grantDao: GrantDao,
+    private val grantRepository: GrantRepository,
     private val algorithm: Algorithm
 ) : TokenStore {
     private val LOG = getLogger(TokenStore::class.java)
@@ -82,7 +81,7 @@ class PostgresTokenStore(
     }
 
     override fun storeAccessToken(accessToken: AccessToken) {
-        grantDao.storeGrant(
+        grantRepository.storeGrant(
             subject = accessToken.identity!!.username,
             clientId = UUID.fromString(accessToken.clientId),
             scopes = accessToken.scopes,

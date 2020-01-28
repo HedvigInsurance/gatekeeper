@@ -3,8 +3,7 @@ package com.hedvig.gatekeeper.token
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.hedvig.gatekeeper.client.ClientScope
-import com.hedvig.gatekeeper.oauth.persistence.GrantDao
-import com.hedvig.gatekeeper.oauth.persistence.storeGrant
+import com.hedvig.gatekeeper.oauth.GrantRepository
 import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
@@ -28,7 +27,7 @@ internal class PostgresTokenStoreTest {
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenDao = mock(RefreshTokenDao::class.java),
-            grantDao = mock(GrantDao::class.java),
+            grantRepository = mock(GrantRepository::class.java),
             algorithm = algorithm
         )
 
@@ -47,7 +46,7 @@ internal class PostgresTokenStoreTest {
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenDao = mock(RefreshTokenDao::class.java),
-            grantDao = mock(GrantDao::class.java),
+            grantRepository = mock(GrantRepository::class.java),
             algorithm = algorithm
         )
 
@@ -60,10 +59,10 @@ internal class PostgresTokenStoreTest {
     fun testStoresRefreshTokenAndGrant() {
         val algorithm = Algorithm.HMAC256("abc123")
         val refreshTokenDao = mock(RefreshTokenDao::class.java)
-        val grantPersistenceDao = mock(GrantDao::class.java)
+        val grantPersistenceRepository = mock(GrantRepository::class.java)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenDao = mock(RefreshTokenDao::class.java),
-            grantDao =  grantPersistenceDao,
+            grantRepository = grantPersistenceRepository,
             algorithm = algorithm
         )
 
@@ -85,7 +84,7 @@ internal class PostgresTokenStoreTest {
         )
         postgresTokenStore.storeAccessToken(accessToken)
 
-        val grant = grantPersistenceDao.storeGrant(
+        verify(grantPersistenceRepository).storeGrant(
             subject = "blargh",
             clientId = UUID.fromString(clientId),
             scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
@@ -98,7 +97,6 @@ internal class PostgresTokenStoreTest {
             token = "abc123"
         )
 
-        assertThat(grant).isNotNull
         assertThat(token).isNotNull
     }
 }
