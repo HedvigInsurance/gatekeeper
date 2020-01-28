@@ -1,7 +1,7 @@
 package com.hedvig.gatekeeper.oauth.persistence
 
 import java.time.Instant
-import java.util.*
+import java.util.UUID
 
 data class Grant(
     val id: UUID,

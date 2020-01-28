@@ -10,12 +10,10 @@ import com.hedvig.dropwizard.pebble.PebbleBundle
 import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
-import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
 import com.hedvig.gatekeeper.authorization.employees.EmployeeRepository
 import com.hedvig.gatekeeper.client.ClientRepository
 import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.client.command.CreateClientCommand
-import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.db.install
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.ChainedIdentityService
@@ -25,13 +23,11 @@ import com.hedvig.gatekeeper.oauth.GOOGLE_SSO
 import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
 import com.hedvig.gatekeeper.oauth.GrantRepository
-import com.hedvig.gatekeeper.oauth.persistence.GrantDao
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
 import com.hedvig.gatekeeper.security.User
 import com.hedvig.gatekeeper.token.JWTAccessTokenConverter
 import com.hedvig.gatekeeper.token.PostgresTokenStore
-import com.hedvig.gatekeeper.token.RefreshTokenDao
 import com.hedvig.gatekeeper.token.RefreshTokenRepository
 import com.hedvig.gatekeeper.token.SecureRandomRefreshTokenConverter
 import com.hedvig.gatekeeper.utils.DotenvFacade
@@ -44,7 +40,6 @@ import feign.Feign
 import feign.form.FormEncoder
 import feign.jackson.JacksonDecoder
 import feign.jackson.JacksonEncoder
-import feign.jaxrs.JAXRSContract
 import feign.okhttp.OkHttpClient
 import feign.slf4j.Slf4jLogger
 import io.dropwizard.Application
