@@ -14,7 +14,7 @@ import nl.myndocs.oauth2.token.RefreshToken
 import nl.myndocs.oauth2.token.TokenStore
 import org.apache.log4j.LogManager.getLogger
 import java.time.temporal.ChronoUnit
-import java.util.*
+import java.util.UUID
 
 class PostgresTokenStore(
     private val refreshTokenRepository: RefreshTokenRepository,

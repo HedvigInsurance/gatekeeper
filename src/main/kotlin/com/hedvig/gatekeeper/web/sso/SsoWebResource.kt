@@ -7,10 +7,14 @@ import com.hedvig.gatekeeper.web.sso.views.GoogleSsoInitView
 import com.hedvig.gatekeeper.web.sso.views.InvalidRedirectView
 import com.hedvig.gatekeeper.web.sso.views.RedirectingView
 import nl.myndocs.oauth2.exception.InvalidGrantException
+import org.apache.http.client.utils.URIBuilder
+import org.apache.http.client.utils.URLEncodedUtils
 import java.net.URI
+import java.nio.charset.Charset
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
 import javax.ws.rs.GET
+import javax.ws.rs.HeaderParam
 import javax.ws.rs.Path
 import javax.ws.rs.Produces
 import javax.ws.rs.QueryParam
@@ -53,7 +57,13 @@ class SsoWebResource(
         idToken: String,
 
         @QueryParam("redirect")
-        redirect: String?
+        redirect: String?,
+
+        @HeaderParam("Host")
+        realHost: String?,
+
+        @HeaderParam("X-Forwarded-For-Host")
+        forwardedHost: String?
     ): Response {
         val validHostResult = validateRedirectHost(redirect)
 
@@ -62,34 +72,22 @@ class SsoWebResource(
         }
 
         return try {
-            val redirectUri = URI.create(redirect)
+            val originalRedirect = URI.create(redirect)
             val result = oauth2Client.grantGoogleSso(idToken)
 
-            val atCookie = NewCookie(
-                "hv_at",
-                result.accessToken,
-                "/",
-                cookieDomain,
-                "",
-                result.expiresIn,
-                secureCookies,
-                true
-            )
-            val rtCookie = NewCookie(
-                "hv_rt",
-                result.refreshToken,
-                "/",
-                cookieDomain,
-                "",
-                3600 * 24 * 7,
-                secureCookies,
-                true
-            )
+            val redirectUri = URIBuilder()
+                .apply {
+                    scheme = originalRedirect.scheme
+                    host = originalRedirect.host
+                    path = originalRedirect.path
+                    setParameters(URLEncodedUtils.parse(originalRedirect.query, Charset.forName("UTF-8")))
+                    addParameter("access-token", result.accessToken)
+                    addParameter("refresh-token", result.refreshToken)
+                }
+                .build()
 
             Response
                 .temporaryRedirect(redirectUri)
-                .cookie(atCookie)
-                .cookie(rtCookie)
                 .entity(RedirectingView())
                 .build()
         } catch (e: InvalidGrantException) {

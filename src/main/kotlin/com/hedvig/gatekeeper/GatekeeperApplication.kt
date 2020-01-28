@@ -10,12 +10,11 @@ import com.hedvig.dropwizard.pebble.PebbleBundle
 import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
-import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
 import com.hedvig.gatekeeper.authorization.employees.EmployeeRepository
 import com.hedvig.gatekeeper.client.ClientRepository
 import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.client.command.CreateClientCommand
-import com.hedvig.gatekeeper.client.persistence.ClientDao
+import com.hedvig.gatekeeper.db.install
 import com.hedvig.gatekeeper.health.ApplicationHealthCheck
 import com.hedvig.gatekeeper.identity.ChainedIdentityService
 import com.hedvig.gatekeeper.identity.EmployeeIdentityService
@@ -24,20 +23,25 @@ import com.hedvig.gatekeeper.oauth.GOOGLE_SSO
 import com.hedvig.gatekeeper.oauth.GoogleSsoGrantAuthorizer
 import com.hedvig.gatekeeper.oauth.GoogleSsoVerifier
 import com.hedvig.gatekeeper.oauth.GrantRepository
-import com.hedvig.gatekeeper.oauth.persistence.GrantDao
 import com.hedvig.gatekeeper.security.IntraServiceAuthenticator
 import com.hedvig.gatekeeper.security.IntraServiceAuthorizer
 import com.hedvig.gatekeeper.security.User
 import com.hedvig.gatekeeper.token.JWTAccessTokenConverter
 import com.hedvig.gatekeeper.token.PostgresTokenStore
-import com.hedvig.gatekeeper.token.RefreshTokenDao
 import com.hedvig.gatekeeper.token.RefreshTokenRepository
 import com.hedvig.gatekeeper.token.SecureRandomRefreshTokenConverter
 import com.hedvig.gatekeeper.utils.DotenvFacade
 import com.hedvig.gatekeeper.utils.RandomGenerator
 import com.hedvig.gatekeeper.web.sso.Oauth2Client
+import com.hedvig.gatekeeper.web.sso.Oauth2HttpClient
 import com.hedvig.gatekeeper.web.sso.RedirectValidator
 import com.hedvig.gatekeeper.web.sso.SsoWebResource
+import feign.Feign
+import feign.form.FormEncoder
+import feign.jackson.JacksonDecoder
+import feign.jackson.JacksonEncoder
+import feign.okhttp.OkHttpClient
+import feign.slf4j.Slf4jLogger
 import io.dropwizard.Application
 import io.dropwizard.assets.AssetsBundle
 import io.dropwizard.auth.AuthDynamicFeature
@@ -94,6 +98,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
     override fun run(configuration: GatekeeperConfiguration, environment: Environment) {
         val factory = JdbiFactory()
         val jdbi = factory.build(environment, configuration.dataSourceFactory, "postgresql")
+        jdbi.install()
 
         val clientRepository = ClientRepository(jdbi)
         val employeeRepository = EmployeeRepository(jdbi)
@@ -181,11 +186,18 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             }
         }
         environment.jersey().register(oauth2Server)
+
         environment.jersey().register(SsoWebResource(
             oauth2Client = Oauth2Client(
                 selfClientId = configuration.secrets!!.selfOauth2ClientId!!,
                 selfClientSecret = configuration.secrets!!.selfOauth2ClientSecret!!,
-                selfHost = configuration.selfHost!!
+                client = Feign.builder()
+                    .client(OkHttpClient())
+                    .encoder(JacksonEncoder(environment.objectMapper))
+                    .decoder(JacksonDecoder(environment.objectMapper))
+                    .encoder(FormEncoder())
+                    .logger(Slf4jLogger(Oauth2HttpClient::class.java))
+                    .target(Oauth2HttpClient::class.java, configuration.selfHost)
             ),
             redirectValidator = RedirectValidator(configuration.allowedRedirectDomains!!),
             secureCookies = configuration.secureCookies!!,
