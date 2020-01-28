@@ -22,7 +22,7 @@ internal class PostgresClientServiceTest {
             createdAt = Instant.now(),
             createdBy = "blargh"
         )
-        `when`(dao.find(eq(clientId) ?: clientId)).thenReturn(Optional.of(client))
+        `when`(dao.find(eq(clientId) ?: clientId)).thenReturn(client)
 
         val service = PostgresClientService(dao)
         val result = service.clientOf(clientId.toString())
@@ -33,7 +33,7 @@ internal class PostgresClientServiceTest {
     internal fun testDoesntGetEmptyClient() {
         val dao = mock(ClientDao::class.java)
         val clientId = UUID.randomUUID()
-        `when`(dao.find(eq(clientId) ?: clientId)).thenReturn(Optional.empty())
+        `when`(dao.find(eq(clientId) ?: clientId)).thenReturn(null)
 
         val service = PostgresClientService(dao)
         val result = service.clientOf(clientId.toString())
@@ -56,13 +56,13 @@ internal class PostgresClientServiceTest {
         val service = PostgresClientService(dao)
 
         `when`(dao.find(eq(clientId) ?: clientId))
-            .thenReturn(Optional.of(clientEntity))
+            .thenReturn(clientEntity)
 
         val result = service.validClient(clientEntity.toClient(), "very secret")
         assertTrue(result)
 
         `when`(dao.find(eq(clientId) ?: clientId))
-            .thenReturn(Optional.empty())
+            .thenReturn(null)
 
         val result2 = service.validClient(clientEntity.toClient(), "not a valid secret")
         assertFalse(result2)

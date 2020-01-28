@@ -9,6 +9,7 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate
 import java.time.Instant
 import java.util.*
 
+@RegisterRowMapper(ClientRowMapper::class)
 interface ClientDao {
     @SqlQuery(
         """
@@ -17,10 +18,9 @@ interface ClientDao {
         WHERE "client_id" = :clientId
             AND "deactivated_at" IS NULL;"""
     )
-    @RegisterRowMapper(ClientRowMapper::class)
     fun find(
         @Bind("clientId") clientId: UUID
-    ): Optional<ClientEntity>
+    ): ClientEntity?
 
     @SqlQuery(
         """
@@ -30,11 +30,10 @@ interface ClientDao {
                 AND "client_secret" = :clientSecret
                 AND "deactivated_at" IS NULL;"""
     )
-    @RegisterRowMapper(ClientRowMapper::class)
     fun findClientByIdAndSecret(
         @Bind("clientId") clientId: UUID,
         @Bind("clientSecret") clientSecret: String
-    ): Optional<ClientEntity>
+    ): ClientEntity?
 
     @SqlQuery(
         """
@@ -44,8 +43,7 @@ interface ClientDao {
         ORDER BY "created_at" DESC
     ;"""
     )
-    @RegisterRowMapper(ClientRowMapper::class)
-    fun findAll(): Array<ClientEntity>
+    fun findAll(): List<ClientEntity>
 
     @SqlUpdate("""
         INSERT INTO clients (
@@ -68,20 +66,4 @@ interface ClientDao {
         );"""
     )
     fun insert(@BindBean client: ClientEntity)
-}
-
-fun ClientDao.create(request: CreateClientRequestDto, createdBy: String): ClientEntity {
-    val clientId = UUID.randomUUID()
-    val clientSecret = UUID.randomUUID().toString()
-    val clientEntity = ClientEntity(
-        clientId = clientId,
-        clientSecret = clientSecret,
-        redirectUris = request.redirectUris,
-        authorizedGrantTypes = request.authorizedGrantTypes,
-        clientScopes = request.clientScopes,
-        createdAt = Instant.now(),
-        createdBy = createdBy
-    )
-    insert(clientEntity)
-    return clientEntity
 }

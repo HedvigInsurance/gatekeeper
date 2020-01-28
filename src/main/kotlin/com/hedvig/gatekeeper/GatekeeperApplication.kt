@@ -11,6 +11,7 @@ import com.hedvig.gatekeeper.api.ClientResource
 import com.hedvig.gatekeeper.api.HealthResource
 import com.hedvig.gatekeeper.api.Oauth2Server
 import com.hedvig.gatekeeper.authorization.employees.EmployeeDao
+import com.hedvig.gatekeeper.client.ClientRepository
 import com.hedvig.gatekeeper.client.PostgresClientService
 import com.hedvig.gatekeeper.client.command.CreateClientCommand
 import com.hedvig.gatekeeper.client.persistence.ClientDao
@@ -92,6 +93,8 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         val jdbi = factory.build(environment, configuration.dataSourceFactory, "postgresql")
 
         val clientDao = jdbi.onDemand(ClientDao::class.java)
+        val clientRepository = ClientRepository(jdbi)
+
         val employeeDao = jdbi.onDemand(EmployeeDao::class.java)
         val grantDao = jdbi.onDemand(GrantDao::class.java)
 
@@ -118,7 +121,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
         environment.jersey().register(AuthValueFactoryProvider.Binder(User::class.java))
         environment.jersey().register(AuthValueFactoryProvider.Binder(User::class.java))
 
-        environment.jersey().register(ClientResource(clientDao))
+        environment.jersey().register(ClientResource(clientRepository))
 
         environment.healthChecks().register("application", ApplicationHealthCheck())
         environment.jersey().register(HealthResource())

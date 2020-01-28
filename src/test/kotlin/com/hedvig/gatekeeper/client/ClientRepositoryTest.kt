@@ -1,11 +1,10 @@
 package com.hedvig.gatekeeper.client
 
 import com.hedvig.gatekeeper.api.CreateClientRequestDto
-import com.hedvig.gatekeeper.client.persistence.ClientDao
 import com.hedvig.gatekeeper.client.persistence.ClientEntity
-import com.hedvig.gatekeeper.client.persistence.create
 import com.hedvig.gatekeeper.testhelp.JdbiTestHelper
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.Test
 import java.time.Instant
 import java.util.*
 
-internal class ClientExtensionsTest {
+internal class ClientRepositoryTest {
     private val jdbiTestHelper = JdbiTestHelper.create()
 
     @BeforeEach
@@ -29,7 +28,7 @@ internal class ClientExtensionsTest {
 
     @Test
     internal fun testCreatesAClientFromARequest() {
-        val dao = jdbiTestHelper.jdbi.onDemand(ClientDao::class.java)
+        val repository = ClientRepository(jdbiTestHelper.jdbi)
 
         val request = CreateClientRequestDto(
             clientScopes = setOf(ClientScope.MANAGE_EMPLOYEES),
@@ -37,7 +36,7 @@ internal class ClientExtensionsTest {
             redirectUris = setOf("https://redirect-1")
         )
         val createdBy = "john doe"
-        val result = dao.create(request, createdBy)
+        val result = repository.create(request, createdBy)
 
         assertThat(result.clientScopes).isEqualTo(setOf(ClientScope.MANAGE_EMPLOYEES))
         assertThat(result.authorizedGrantTypes).isEqualTo(setOf(GrantType.PASSWORD))
@@ -48,7 +47,7 @@ internal class ClientExtensionsTest {
 
     @Test
     fun testInsertsAndFindsClient() {
-        val dao = jdbiTestHelper.jdbi.onDemand(ClientDao::class.java)
+        val repository = ClientRepository(jdbiTestHelper.jdbi)
 
         val client = ClientEntity(
             clientId = UUID.randomUUID(),
@@ -59,9 +58,9 @@ internal class ClientExtensionsTest {
             createdAt = Instant.now(),
             createdBy = "Blargh"
         )
-        dao.insert(client)
+        repository.insert(client)
 
-        val result = dao.find(client.clientId)
-        assertTrue(result.isPresent)
+        val result = repository.find(client.clientId)
+        assertNotNull(result)
     }
 }

@@ -8,14 +8,13 @@ import java.util.*
 class PostgresClientService(
     private val clientDao: ClientDao
 ) : ClientService {
-    override fun clientOf(clientId: String): Client? {
-        return clientDao.find(UUID.fromString(clientId)).map { it.toClient() }.orElse(null)
-    }
+    override fun clientOf(clientId: String): Client? =
+        clientDao.find(UUID.fromString(clientId))?.toClient()
 
     override fun validClient(client: Client, clientSecret: String): Boolean {
         return clientDao
             .find(UUID.fromString(client.clientId))
-            .filter { it.clientSecret == clientSecret }
-            .isPresent
+            ?.let { it.clientSecret == clientSecret }
+            ?: false
     }
 }

@@ -2,10 +2,9 @@ package com.hedvig.gatekeeper.client.command
 
 import com.hedvig.gatekeeper.GatekeeperConfiguration
 import com.hedvig.gatekeeper.api.CreateClientRequestDto
+import com.hedvig.gatekeeper.client.ClientRepository
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.client.GrantType
-import com.hedvig.gatekeeper.client.persistence.ClientDao
-import com.hedvig.gatekeeper.client.persistence.create
 import com.hedvig.gatekeeper.db.install
 import io.dropwizard.cli.ConfiguredCommand
 import io.dropwizard.setup.Bootstrap
@@ -21,7 +20,7 @@ class CreateClientCommand : ConfiguredCommand<GatekeeperConfiguration>("client-c
             configuration.dataSourceFactory.password
         ).install()
 
-        val clientDao = jdbi.onDemand(ClientDao::class.java)
+        val clientRepository = ClientRepository(jdbi)
 
         val clientScopes = namespace.getList<String>("scopes")
             .map { ClientScope.fromString(it) }
@@ -38,7 +37,7 @@ class CreateClientCommand : ConfiguredCommand<GatekeeperConfiguration>("client-c
             authorizedGrantTypes = authorizedGrantTypes
         )
 
-        val client = clientDao.create(dto, "root")
+        val client = clientRepository.create(dto, "root")
 
         println("Client id: ${client.clientId}")
         println("Client secret: ${client.clientSecret}")

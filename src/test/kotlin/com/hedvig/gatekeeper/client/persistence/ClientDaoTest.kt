@@ -39,15 +39,16 @@ internal class ClientDaoTest {
         )
         dao.insert(client)
 
-        val result = dao.find(client.clientId).get()
-        assertEquals(client.clientId, result.clientId)
+        val result = dao.find(client.clientId)
+        assertNotNull(result)
+        assertEquals(client.clientId, result!!.clientId)
         assertEquals(client.redirectUris, result.redirectUris)
         assertEquals(client.authorizedGrantTypes, result.authorizedGrantTypes)
         assertEquals(client.clientScopes, result.clientScopes)
         assertEquals(client.createdBy, result.createdBy)
 
-        val withSecretResult = dao.findClientByIdAndSecret(client.clientId, client.clientSecret).get()
-        assertEquals(client.clientId, withSecretResult.clientId)
+        val withSecretResult = dao.findClientByIdAndSecret(client.clientId, client.clientSecret)
+        assertEquals(client.clientId, withSecretResult?.clientId)
     }
 
     @Test
@@ -76,6 +77,6 @@ internal class ClientDaoTest {
         dao.insert(client2)
 
         val result = dao.findAll()
-        assertArrayEquals(result, arrayOf(client2, client1))
+        assertEquals(result, listOf(client2, client1))
     }
 }

@@ -1,8 +1,7 @@
 package com.hedvig.gatekeeper.api
 
 import com.hedvig.gatekeeper.api.dto.ClientDto
-import com.hedvig.gatekeeper.client.persistence.ClientDao
-import com.hedvig.gatekeeper.client.persistence.create
+import com.hedvig.gatekeeper.client.ClientRepository
 import com.hedvig.gatekeeper.security.User
 import io.dropwizard.auth.Auth
 import java.net.URI
@@ -17,30 +16,27 @@ import javax.ws.rs.core.Response
 @Path("/admin/clients")
 @Produces(MediaType.APPLICATION_JSON)
 class ClientResource(
-    private val clientDao: ClientDao
+    private val clientRepository: ClientRepository
 ) {
     @GET
     @RolesAllowed("ADMIN_SYSTEM")
     fun getClients(): Array<ClientDto> {
-        return clientDao.findAll().map { ClientDto.fromClientEntity(it) }.toTypedArray()
+        return clientRepository.findAll().map { ClientDto.fromClientEntity(it) }.toTypedArray()
     }
 
     @GET
     @Path("/{clientId}")
     @RolesAllowed("ADMIN_SYSTEM")
     fun getClient(@PathParam("clientId") clientId: UUID): ClientDto {
-        val result = clientDao.find(clientId).map { ClientDto.fromClientEntity(it) }
-        if (!result.isPresent) {
-            throw BadRequestException("No such client")
-        }
 
-        return result.get()
+        return clientRepository.find(clientId)?.let { ClientDto.fromClientEntity(it) }
+            ?: throw BadRequestException("No such client")
     }
 
     @POST
     @RolesAllowed("ADMIN_SYSTEM")
     fun createClient(@NotNull @Valid request: CreateClientRequestDto, @Auth user: User): Response {
-        val result = clientDao.create(request, user.name)
+        val result = clientRepository.create(request, user.name)
         return Response.created(URI.create("/admin/clients/${result.clientId}"))
             .entity(ClientDto.fromClientEntity(result))
             .build()
