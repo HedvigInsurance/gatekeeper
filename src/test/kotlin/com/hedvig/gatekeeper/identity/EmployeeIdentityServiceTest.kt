@@ -54,15 +54,16 @@ internal class EmployeeIdentityServiceTest {
             authorizedGrantTypes = emptySet(),
             redirectUris = emptySet()
         )
+        val uuid = UUID.randomUUID()
         val employee = Employee(
-            id = UUID.randomUUID(),
+            id = uuid,
             email = "foo@bar.baz",
             role = Role.IEX,
             firstGrantedAt = Instant.now()
         )
         `when`(employeeRepositoryStub.findByEmail("foo@bar.baz")).thenReturn(employee)
 
-        assertThat(employeeIdentityService.identityOf(client, employee.email)).isEqualTo(Identity(employee.email, mapOf("role" to Role.IEX)))
+        assertThat(employeeIdentityService.identityOf(client, employee.email)).isEqualTo(Identity(employee.email, mapOf("role" to Role.IEX, "id" to uuid)))
         assertThat(employeeIdentityService.identityOf(client, "not foo@bar.baz")).isNull()
     }
 

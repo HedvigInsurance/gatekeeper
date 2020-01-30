@@ -178,6 +178,7 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
             }
             tokenInfoCallback = { tokenInfo ->
                 mapOf(
+                    "id" to tokenInfo.identity?.metadata?.get("id"),
                     "subject" to tokenInfo.identity?.username,
                     "scopes" to tokenInfo.scopes,
                     "role" to tokenInfo.identity?.metadata?.get("role")
@@ -200,8 +201,6 @@ class GatekeeperApplication : Application<GatekeeperConfiguration>() {
                     .target(Oauth2HttpClient::class.java, configuration.selfHost)
             ),
             redirectValidator = RedirectValidator(configuration.allowedRedirectDomains!!),
-            secureCookies = configuration.secureCookies!!,
-            cookieDomain = configuration.cookieDomain!!,
             googleWebClientId = configuration.secrets!!.googleWebClientId!!
         ))
     }

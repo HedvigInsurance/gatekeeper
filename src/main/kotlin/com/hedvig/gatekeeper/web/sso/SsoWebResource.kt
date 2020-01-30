@@ -27,8 +27,6 @@ import javax.ws.rs.core.Response
 class SsoWebResource(
     private val googleWebClientId: String,
     private val redirectValidator: RedirectValidator,
-    private val secureCookies: Boolean,
-    private val cookieDomain: String,
     private val oauth2Client: Oauth2Client
 ) {
     @GET
@@ -79,6 +77,7 @@ class SsoWebResource(
                 .apply {
                     scheme = originalRedirect.scheme
                     host = originalRedirect.host
+                    port = originalRedirect.port
                     path = originalRedirect.path
                     setParameters(URLEncodedUtils.parse(originalRedirect.query, Charset.forName("UTF-8")))
                     addParameter("access-token", result.accessToken)

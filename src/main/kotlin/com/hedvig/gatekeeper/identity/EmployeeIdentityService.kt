@@ -23,7 +23,12 @@ class EmployeeIdentityService(
 
     override fun identityOf(forClient: Client, username: String): Identity? {
         val result = employeeRepository.findByEmail(username)
-            ?.let { employee -> Identity(employee.email, mapOf("role" to employee.role)) }
+            ?.let { employee ->
+                Identity(
+                    employee.email,
+                    mapOf("role" to employee.role, "id" to employee.id)
+                )
+            }
 
         result?.let {
             LOG.info("Successfully authenticated employee [username='$username']")

@@ -2,7 +2,7 @@ refreshTokenExpirationTimeInDays: 365
 accessTokenExpirationTimeInSeconds: 1800 # 30 minutes
 allowedHostedDomains: ["hedvig.com"]
 
-allowedRedirectDomains: ["hedvig.com", "hedviglocaldev.com", "dev.hedvigit.com"]
+allowedRedirectDomains: ["hedvig.com", "hedviglocaldev.com", "dev.hedvigit.com", "localhost"]
 secureCookies: ${SECURE_COOKIES:-false}
 cookieDomain: ${COOKIE_DOMAIN:-hedviglocaldev.com}
 selfHost: ${SELF_HOST:-http://hedviglocaldev.com:8040}
