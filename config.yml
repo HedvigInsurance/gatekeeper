@@ -14,8 +14,6 @@ logging:
       threshold: ERROR
       dsn: ${SENTRY_DSN}
       environment: ${SENTRY_ENVIRONMENT:-}
-      #mdcTags: ['foo','bar','baz']
-      #sentryClientFactory: com.example.SentryClientFactory
       stacktraceAppPackages: ['com.hedvig']
     - type: console
       threshold: ALL
