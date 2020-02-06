@@ -9,6 +9,18 @@ selfHost: ${SELF_HOST:-http://hedviglocaldev.com:8040}
 
 logging:
   level: INFO
+  appenders:
+    - type: sentry
+      threshold: ERROR
+      dsn: ${SENTRY_DSN}
+      environment: ${SENTRY_ENVIRONMENT:-}
+      stacktraceAppPackages: ['com.hedvig']
+    - type: console
+      threshold: ALL
+      queueSize: 512
+      discardingThreshold: 0
+      timeZone: UTC
+      target: stdout
 
 server:
   type: default
