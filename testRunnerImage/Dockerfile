@@ -3,5 +3,5 @@ RUN yum -y install python3 \
     python3-pip \
     shadow-utils \
     util-linux
-RUN adduser underwriter
-USER underwriter
+RUN adduser gatekeeper
+USER gatekeeper
