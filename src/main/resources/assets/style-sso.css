@@ -1,36 +1,83 @@
 .sso-body {
-    background: #070646;
+  background-color: #121212;
 }
 
 .main-wrapper {
-    padding: 15px;
-    width: 100%;
+  padding: 15px;
+  width: 100%;
 }
 
 .main {
-    margin: 10vh auto;
-    text-align: center;
-    max-width: 500px;
-    padding: 15px;
-    border-radius: 7px;
-    background: #fff;
+  margin: 20vh auto;
+  text-align: center;
+  max-width: 500px;
+  padding: 15px;
+  border-radius: 7px;
+  background: #121212;
+  color: white;
+}
+
+.main > p {
+  width: 60%;
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
+.logo {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+.logo-text {
+  width: 100px;
+}
+
+.logo-icon {
+  width: 18px;
+}
+
+.sign-in-button {
+  margin-top: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 1em;
+  font-family: inherit;
+  padding: 16px 50px;
+  background: transparent;
+  color: white;
+  border: 1px solid white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 200ms, border 200ms, color 200ms, opacity 200ms;
+}
+
+.sign-in-button:hover,
+.sign-in-button:focus {
+  outline: none;
+  color: #121212;
+  background: white;
+  border-color: white;
 }
 
 .grant-error {
-    padding-top: 15px;
-    color: #FF8A80;
-    font-weight: 600;
+  padding-top: 15px;
+  color: #ff8a80;
+  font-weight: 600;
 }
 
 .h-google-signin {
-    display: inline-block;
-    margin: 30px auto;
+  display: inline-block;
+  margin: 30px auto;
 }
 
 .h-google-signin-wrapper {
-    text-align: center;
+  text-align: center;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
