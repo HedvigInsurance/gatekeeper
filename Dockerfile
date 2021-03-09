@@ -1,18 +1,45 @@
-FROM amazoncorretto:11 as thebuild
+##### Dependencies stage #####
+FROM maven:3.6.3-amazoncorretto-11 AS dependencies
+WORKDIR /usr/app
 
-COPY . /build
-WORKDIR /build
+# Set up the user running the tests (needed for embedded postgres)
+RUN yum -y install python3 \
+    python3-pip \
+    shadow-utils \
+    util-linux
+RUN adduser gatekeeper
 
-RUN ./mvnw clean install -DskipTests
+# Resolve dependencies and cache them
+COPY pom.xml .
+RUN mvn dependency:go-offline -s /usr/share/maven/ref/settings-docker.xml
+# This is the maven repo in /usr/share/maven/ref/settings-docker.xml
+# has to be readable by 'gatekeeper'
+RUN chown -R gatekeeper /usr/share/maven/ref/repository
 
-FROM amazoncorretto:11
+
+##### Build stage #####
+FROM dependencies AS build
+COPY src/main src/main
+RUN mvn clean package -s /usr/share/maven/ref/settings-docker.xml
+
+
+##### Test stage #####
+FROM build AS test
+COPY src/test src/test
+RUN chown -R gatekeeper .
+
+# Tests must be run as custom user because of EmbeddedPostgres
+RUN su gatekeeper -c 'mvn test -s /usr/share/maven/ref/settings-docker.xml'
+
+
+##### Assemble stage #####
+FROM amazoncorretto:11 AS assemble
+
+# Fetch the datadog agent
 RUN curl -o dd-java-agent.jar -L 'https://repository.sonatype.org/service/local/artifact/maven/redirect?r=central-proxy&g=com.datadoghq&a=dd-java-agent&v=LATEST'
 
-RUN mkdir /app
-COPY --from=thebuild /build/target/gatekeeper-0.1.0-SNAPSHOT.jar /app/gatekeeper-0.1.0-SNAPSHOT.jar
-COPY --from=thebuild /build/config.yml /app/config.yml
-
-WORKDIR /app
+COPY --from=build /usr/app/target/gatekeeper-0.1.0-SNAPSHOT.jar .
+COPY config.yml .
 
 ENTRYPOINT \
     java -jar gatekeeper-0.1.0-SNAPSHOT.jar db migrate config.yml && \
