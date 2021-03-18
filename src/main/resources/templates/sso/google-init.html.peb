@@ -18,6 +18,7 @@
 {% endblock %}
 
 {% block script %}
+<script>
     const button = document.getElementById('sign-in');
 
     gapi.load('auth2', function () {
@@ -38,5 +39,6 @@
             }
         )
     });
+</script>
 {% endblock %}
 

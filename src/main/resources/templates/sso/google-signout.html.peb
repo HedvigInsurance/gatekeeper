@@ -11,6 +11,7 @@
 {% endblock %}
 
 {% block script %}
+<script>
     function signOut() {
         gapi.load('auth2', function() {
             gapi.auth2.init({ client_id: '{{ clientId | escape("js") }}' })
@@ -23,4 +24,5 @@
                 })
         })
     }
+</script>
 {% endblock %}
