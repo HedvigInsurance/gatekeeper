@@ -1,47 +1,49 @@
 html, body {
-    padding: 0;
-    margin: 0;
+	padding: 0;
+	margin: 0;
+	background: #121212;
+	color: white;
 
-    font-family: 'CircularStd', sans-serif;
+	font-family: 'FavoritStd', sans-serif;
 }
 
 * {
-    box-sizing: border-box;
+	box-sizing: border-box;
 }
 
 h1, h2, h3, h4, h5, h5 {
-    font-family: 'SoRay', sans-serif
+	font-family: 'FavoritStd', sans-serif
 }
 
 a {
-    color: inherit;
+	color: inherit;
 }
 a:hover, a:focus {
-    color: rgb(101, 30, 255);
+	color: rgb(101, 30, 255);
 }
 
 @font-face {
-	font-family: "CircularStd";
+	font-family: "FavoritStd";
 	font-style: normal;
 	font-weight: 600;
-	src: url("https://cdn.hedvig.com/identity/fonts/CircularStd-Bold.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/CircularStd-Bold.woff") format("woff");
+	src: url("https://cdn.hedvig.com/identity/fonts/FavoritStd-Bold.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/FavoritStd-Bold.woff") format("woff");
 }
 
 @font-face {
-	font-family:"CircularStd";font-style:italic;font-weight:600;src: url("https://cdn.hedvig.com/identity/fonts/CircularStd-BoldItalic.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/CircularStd-BoldItalic.woff") format("woff");
+	font-family:"FavoritStd";font-style:italic;font-weight:600;src: url("https://cdn.hedvig.com/identity/fonts/FavoritStd-BoldItalic.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/FavoritStd-BoldItalic.woff") format("woff");
 }
 
 @font-face {
-	font-family:"CircularStd";font-style:normal;font-weight:400;src: url("https://cdn.hedvig.com/identity/fonts/CircularStd-Book.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/CircularStd-Book.woff") format("woff");
+	font-family:"FavoritStd";font-style:normal;font-weight:400;src: url("https://cdn.hedvig.com/identity/fonts/FavoritStd-Book.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/FavoritStd-Book.woff") format("woff");
 }
 
 @font-face {
-	font-family:"CircularStd";font-style:italic;font-weight:400;src: url("https://cdn.hedvig.com/identity/fonts/CircularStd-BookItalic.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/CircularStd-BookItalic.woff") format("woff");
+	font-family:"FavoritStd";font-style:italic;font-weight:400;src: url("https://cdn.hedvig.com/identity/fonts/FavoritStd-BookItalic.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/FavoritStd-BookItalic.woff") format("woff");
 }
 
 @font-face {
-	font-family: "SoRay";
+	font-family: "FavoritStd";
 	font-style: normal;
 	font-weight: 800;
-	src: url("https://cdn.hedvig.com/identity/fonts/SoRay-ExtraBold.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/SoRay-ExtraBold.woff") format("woff");
+	src: url("https://cdn.hedvig.com/identity/fonts/FavoritStd-ExtraBold.woff2") format("woff2"), url("https://cdn.hedvig.com/identity/fonts/FavoritStd-ExtraBold.woff") format("woff");
 }

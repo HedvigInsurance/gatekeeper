@@ -1,39 +1,28 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=yes, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <title>Signing out - Hedvig</title>
+{% extends "templates/sso/base.html.peb" %}
+
+{% block title %} Signing out - Hedvig {% endblock %}
+{% block head %}
     <meta name="google-signin-client_id" content="{{ clientId | escape }}">
     <script src="https://apis.google.com/js/platform.js?onload=signOut" async defer></script>
-    <link rel="stylesheet" href="/assets/style-base.css" type="text/css" />
-    <link rel="stylesheet" href="/assets/style-sso.css" type="text/css" />
-</head>
-<body class="sso-body">
-<div class="main-wrapper">
-    <div class="main">
-        <h1>Employee sign in</h1>
-        <img src="https://cdn.hedvig.com/identity/graphics/hedvig-symbol-color.svg" width="50" />
+{% endblock %}
+{% block content %}
+    <p id="signing-out">You're being signed out...</p>
+    <p id="signed-out" class="hidden">You're now signed out. See ya!</p>
+{% endblock %}
 
-        <p id="signing-out">You're being signed out...</p>
-        <p id="signed-out" class="hidden">You're now signed out. See ya!</p>
-    </div>
-</div>
-
+{% block script %}
 <script>
-function signOut() {
-  gapi.load('auth2', function() {
-        gapi.auth2.init({ client_id: '{{ clientId | escape("js") }}' })
-            .then(function() {
-                var auth2 = gapi.auth2.getAuthInstance();
-                auth2.signOut().then(function () {
-                    document.getElementById("signing-out").classList.add("hidden")
-                    document.getElementById("signed-out").classList.remove("hidden")
+    function signOut() {
+        gapi.load('auth2', function() {
+            gapi.auth2.init({ client_id: '{{ clientId | escape("js") }}' })
+                .then(function() {
+                    var auth2 = gapi.auth2.getAuthInstance();
+                    auth2.signOut().then(function () {
+                        document.getElementById("signing-out").classList.add("hidden")
+                        document.getElementById("signed-out").classList.remove("hidden")
+                    })
                 })
-            })
-    })
-}
+        })
+    }
 </script>
-</body>
-</html>
+{% endblock %}
