@@ -19,7 +19,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <dropwizard.version>2.0.0</dropwizard.version>
         <jackson.version>2.10.1</jackson.version>
-        <guava.version>28.1-jre</guava.version>
+        <guava.version>29.0-jre</guava.version>
         <mainClass>com.hedvig.gatekeeper.GatekeeperApplication</mainClass>
         <kotlin.version>1.3.31</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
