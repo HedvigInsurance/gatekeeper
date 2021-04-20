@@ -4,15 +4,16 @@ import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
 import com.hedvig.gatekeeper.client.ClientScope
 import com.hedvig.gatekeeper.oauth.GrantRepository
+import io.mockk.mockk
+import io.mockk.verify
 import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.token.AccessToken
 import nl.myndocs.oauth2.token.RefreshToken
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
 import java.time.Instant
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 internal class PostgresTokenStoreTest {
     @Test
@@ -26,8 +27,8 @@ internal class PostgresTokenStoreTest {
             .withExpiresAt(Date.from(Instant.now().plusSeconds(1_799)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenRepository = mock(RefreshTokenRepository::class.java),
-            grantRepository = mock(GrantRepository::class.java),
+            refreshTokenRepository = mockk(),
+            grantRepository = mockk(),
             algorithm = algorithm
         )
 
@@ -45,8 +46,8 @@ internal class PostgresTokenStoreTest {
             .withExpiresAt(Date.from(Instant.now().minusSeconds(1)))
             .sign(algorithm)
         val postgresTokenStore = PostgresTokenStore(
-            refreshTokenRepository = mock(RefreshTokenRepository::class.java),
-            grantRepository = mock(GrantRepository::class.java),
+            refreshTokenRepository = mockk(),
+            grantRepository = mockk(),
             algorithm = algorithm
         )
 
@@ -58,8 +59,8 @@ internal class PostgresTokenStoreTest {
     @Test
     fun testStoresRefreshTokenAndGrant() {
         val algorithm = Algorithm.HMAC256("abc123")
-        val refreshTokenRepository = mock(RefreshTokenRepository::class.java)
-        val grantPersistenceRepository = mock(GrantRepository::class.java)
+        val refreshTokenRepository = mockk<RefreshTokenRepository>(relaxed = true)
+        val grantPersistenceRepository = mockk<GrantRepository>(relaxed = true)
         val postgresTokenStore = PostgresTokenStore(
             refreshTokenRepository = refreshTokenRepository,
             grantRepository = grantPersistenceRepository,
@@ -84,17 +85,21 @@ internal class PostgresTokenStoreTest {
         )
         postgresTokenStore.storeAccessToken(accessToken)
 
-        verify(grantPersistenceRepository).storeGrant(
-            subject = "blargh",
-            clientId = UUID.fromString(clientId),
-            scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
-            grantMethod = "TODO"
-        )
-        verify(refreshTokenRepository).createRefreshToken(
-            subject = "blargh",
-            clientId = UUID.fromString(clientId),
-            scopes = setOf(ClientScope.MANAGE_MEMBERS),
-            token = "abc123"
-        )
+        verify {
+            grantPersistenceRepository.storeGrant(
+                subject = "blargh",
+                clientId = UUID.fromString(clientId),
+                scopes = setOf(ClientScope.MANAGE_MEMBERS.toString()),
+                grantMethod = "TODO"
+            )
+        }
+        verify {
+            refreshTokenRepository.createRefreshToken(
+                subject = "blargh",
+                clientId = UUID.fromString(clientId),
+                scopes = setOf(ClientScope.MANAGE_MEMBERS),
+                token = "abc123"
+            )
+        }
     }
 }
