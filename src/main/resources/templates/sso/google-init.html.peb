@@ -38,14 +38,14 @@
 
             }
         )
-
-        window.addEventListener('keydown', function clickButton(e) {
-            if (e.key === 'Enter') {
-                button.click()
-                window.removeEventListener('keydown', clickButton)
-            }
-        })
     });
+
+    window.addEventListener('keydown', function clickButton(e) {
+        if (e.key === 'Enter') {
+            button.click()
+            window.removeEventListener('keydown', clickButton)
+        }
+    })
 </script>
 {% endblock %}
 
