@@ -1,11 +1,14 @@
 package com.hedvig.gatekeeper.identity
 
+import io.mockk.every
+import io.mockk.mockk
 import nl.myndocs.oauth2.client.Client
 import nl.myndocs.oauth2.identity.Identity
 import nl.myndocs.oauth2.identity.IdentityService
-import org.junit.Assert.*
+import org.junit.Assert.assertArrayEquals
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito.*
 
 internal class ChainedIdentityServiceTest {
     @Test
@@ -21,11 +24,11 @@ internal class ChainedIdentityServiceTest {
         )
         val identity = Identity("user-foo")
 
-        val identityServiceA = mock(IdentityService::class.java)
-        val identityServiceB = mock(IdentityService::class.java)
+        val identityServiceA = mockk<IdentityService>()
+        val identityServiceB = mockk<IdentityService>()
 
-        `when`(identityServiceA.allowedScopes(client, identity, requestedScopes)).thenReturn(scopesA)
-        `when`(identityServiceB.allowedScopes(client, identity, requestedScopes)).thenReturn(scopesB)
+        every { identityServiceA.allowedScopes(client, identity, requestedScopes) } returns scopesA
+        every { identityServiceB.allowedScopes(client, identity, requestedScopes) } returns scopesB
 
         val chainedIdentityService = ChainedIdentityService(arrayOf(identityServiceA, identityServiceB))
         val resultingScopes = chainedIdentityService.allowedScopes(client, identity, requestedScopes)
@@ -43,18 +46,17 @@ internal class ChainedIdentityServiceTest {
         )
         val identity = Identity("user-foo")
 
-        val identityServiceA = mock(IdentityService::class.java)
-        val identityServiceB = mock(IdentityService::class.java)
-        val identityServiceC = mock(IdentityService::class.java)
+        val identityServiceA = mockk<IdentityService>()
+        val identityServiceB = mockk<IdentityService>()
+        val identityServiceC = mockk<IdentityService>()
 
-        `when`(identityServiceA.identityOf(client, "user-foo")).thenReturn(null)
-        `when`(identityServiceB.identityOf(client, "user-foo")).thenReturn(identity)
+        every { identityServiceA.identityOf(client, "user-foo") } returns null
+        every { identityServiceB.identityOf(client, "user-foo") } returns identity
 
-        val chainedIdentityService = ChainedIdentityService(arrayOf(identityServiceA, identityServiceB, identityServiceC))
+        val chainedIdentityService =
+            ChainedIdentityService(arrayOf(identityServiceA, identityServiceB, identityServiceC))
 
         assertEquals(identity, chainedIdentityService.identityOf(client, "user-foo"))
-
-        verifyZeroInteractions(identityServiceC)
     }
 
     @Test
@@ -67,17 +69,16 @@ internal class ChainedIdentityServiceTest {
         )
         val identity = Identity("user-foo")
 
-        val identityServiceA = mock(IdentityService::class.java)
-        val identityServiceB = mock(IdentityService::class.java)
-        val identityServiceC = mock(IdentityService::class.java)
+        val identityServiceA = mockk<IdentityService>()
+        val identityServiceB = mockk<IdentityService>()
+        val identityServiceC = mockk<IdentityService>()
 
-        `when`(identityServiceA.validCredentials(client, identity, "pass")).thenReturn(false)
-        `when`(identityServiceB.validCredentials(client, identity, "pass")).thenReturn(true)
+        every { identityServiceA.validCredentials(client, identity, "pass") } returns false
+        every { identityServiceB.validCredentials(client, identity, "pass") } returns true
 
-        val chainedIdentityService = ChainedIdentityService(arrayOf(identityServiceA, identityServiceB, identityServiceC))
+        val chainedIdentityService =
+            ChainedIdentityService(arrayOf(identityServiceA, identityServiceB, identityServiceC))
 
         assertTrue(chainedIdentityService.validCredentials(client, identity, "pass"))
-
-        verifyZeroInteractions(identityServiceC)
     }
 }
